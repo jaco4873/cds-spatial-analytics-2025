@@ -2,7 +2,6 @@
 # Script to examine the structure of the wrangled data
 
 import geopandas as gpd
-import pandas as pd
 
 # Load municipal data from wrangled shapefile
 print("Loading wrangled data...")

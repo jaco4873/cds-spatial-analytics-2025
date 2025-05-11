@@ -2,8 +2,6 @@
 # Examine the wrangled shapefile data to see what attributes are already included
 
 import geopandas as gpd
-import pandas as pd
-import matplotlib.pyplot as plt
 
 # Load municipal data from wrangled shapefile
 print("Loading wrangled data...")
