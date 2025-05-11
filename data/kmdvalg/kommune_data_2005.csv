@@ -1,0 +1,99 @@
+name,href,stemmeberettigede,stemmeprocent,optalte_stemmer,merged,merged_municipalities,year
+Dragør,a400155.htm,10036,77.7,7802,False,[],2005
+Tårnby,a400185.htm,30969,62.3,19301,False,[],2005
+Frederiksberg,a400147.htm,76696,64.7,49605,False,[],2005
+København,a400101.htm,411401,58.7,241496,False,[],2005
+Glostrup,a400161.htm,16366,63.7,10430,False,[],2005
+Hvidovre,a400167.htm,38453,63.7,24507,False,[],2005
+Rødovre,a400175.htm,28571,64.0,18277,False,[],2005
+Brøndby,a400153.htm,26365,61.1,16103,False,[],2005
+Vallensbæk,a400187.htm,9383,73.5,6895,False,[],2005
+Albertslund,a400165.htm,20593,65.8,13559,False,[],2005
+Ishøj,a400183.htm,15434,62.6,9665,False,[],2005
+Høje-Tåstrup,a400169.htm,35114,65.3,22947,False,[],2005
+Egedal,a071.htm,28995,77.1,22341,True,"['Ledøje-Smørum', 'Stenløse', 'Ølstykke']",2005
+Ballerup,a400151.htm,35657,68.5,24441,False,[],2005
+Herlev,a400163.htm,20828,67.1,13980,False,[],2005
+Gladsaxe,a400159.htm,47197,66.3,31301,False,[],2005
+Gentofte,a400157.htm,52128,68.8,35863,False,[],2005
+Lyngby-Tårbæk,a400173.htm,40365,68.6,27678,False,[],2005
+Furesø,a055.htm,27448,81.8,22453,True,"['Værløse', 'Farum']",2005
+Rudersdal,a048.htm,40694,76.1,30961,True,"['Søllerød', 'Birkerød']",2005
+Hørsholm,a400223.htm,18568,72.2,13402,False,[],2005
+Allerød,a400201.htm,16993,77.8,13223,False,[],2005
+Bornholm,a400400.htm,34153,78.0,26642,False,[],2005
+Greve,a405253.htm,35886,68.8,24706,False,[],2005
+Solrød,a405269.htm,15499,69.2,10730,False,[],2005
+Roskilde,a079.htm,61183,71.8,43923,True,"['Gundsø', 'Ramsø', 'Roskilde']",2005
+Frederikssund,a057.htm,33067,72.2,23884,True,"['Frederikssund', 'Jægerspris', 'Skibby', 'Slangerup']",2005
+Hillerød,a062.htm,33797,74.1,25059,True,"['Hillerød', 'Skævinge']",2005
+Frederiksværk-Hundested,a058.htm,23750,66.5,15793,True,"['Frederiksværk', 'Hundested']",2005
+Gribskov,a059.htm,30959,70.4,21801,True,"['Græsted-Gilleleje', 'Helsinge']",2005
+Fredensborg,a056.htm,29156,70.7,20611,True,"['Fredensborg-Humlebæk', 'Karlebo']",2005
+Helsingør,a400217.htm,47084,66.0,31094,False,[],2005
+Odsherred,a099.htm,26054,70.2,18297,True,"['Dragsholm', 'Nykøbing-Rørvig', 'Trundholm']",2005
+Lejre,a077.htm,19601,77.1,15112,True,"['Bramsnæs', 'Hvalsø', 'Lejre']",2005
+Kalundborg,a097.htm,37688,69.0,26007,True,"['Bjergsted', 'Gørlev', 'Hvidebæk', 'Høng', 'Kalundborg']",2005
+Holbæk,a093.htm,51134,69.2,35360,True,"['Holbæk', 'Jernløse', 'Svinninge', 'Tornved', 'Tølløse']",2005
+Sorø,a103.htm,21797,72.4,15780,True,"['Dianalund', 'Sorø', 'Stenlille']",2005
+Ringsted,a405329.htm,23563,68.3,16103,False,[],2005
+Køge,a076.htm,41943,70.2,29454,True,"['Køge', 'Skovbo']",2005
+Stevns,a129.htm,16948,74.6,12638,True,"['Vallø', 'Stevns']",2005
+Faxe,a092.htm,26347,70.7,18618,True,"['Haslev', 'Fakse', 'Rønnede']",2005
+Næstved,a121.htm,61319,69.0,42302,True,"['Fuglebjerg', 'Fladså', 'Holmegaard', 'Næstved', 'Suså']",2005
+Slagelse,a102.htm,59341,67.4,39987,True,"['Hashøj', 'Korsør', 'Skælskør', 'Slagelse']",2005
+Vordingborg,a133.htm,36187,72.1,26086,True,"['Langebæk', 'Møn', 'Præstø', 'Vordingborg']",2005
+Guldborgsund,a119.htm,50708,72.5,36772,True,"['Nykøbing F', 'Nysted', 'Nørre Alslev', 'Sakskøbing', 'Stubbekøbing', 'Sydfalster']",2005
+Lolland,a118.htm,39315,72.6,28535,True,"['Holeby', 'Højreby', 'Maribo', 'Nakskov', 'Ravnsborg', 'Rudbjerg', 'Rødby']",2005
+Langeland,a207.htm,11524,76.0,8762,True,"['Rudkøbing', 'Sydlangeland', 'Tranekær']",2005
+Ærø,a221.htm,5648,80.8,4565,True,"['Marstal', 'Ærøskøbing']",2005
+Svendborg,a210.htm,45574,72.1,32865,True,"['Egebjerg', 'Gudme', 'Svendborg']",2005
+Faaborg-Midtfyn,a155.htm,39109,75.1,29381,True,"['Broby', 'Faaborg', 'Ringe', 'Ryslinge', 'Årslev']",2005
+Assens,a147.htm,31149,74.0,23061,True,"['Assens', 'Glamsbjerg', 'Haarby', 'Tommerup', 'Vissenbjerg', 'Aarup']",2005
+Middelfart,a169.htm,27679,73.1,20245,True,"['Ejby', 'Middelfart', 'Nørre Aaby']",2005
+Bogense,a203.htm,22003,75.7,16658,True,"['Bogense', 'Otterup', 'Søndersø']",2005
+Odense,a442461.htm,147269,69.4,102212,False,[],2005
+Kerteminde,a164.htm,17614,77.5,13644,True,"['Kerteminde', 'Langeskov', 'Munkebo']",2005
+Nyborg,a172.htm,24121,73.5,17735,True,"['Nyborg', 'Ullerslev', 'Ørbæk']",2005
+Sønderborg,a245.htm,58764,76.2,44795,True,"['Augustenborg', 'Broager', 'Gråsten', 'Nordborg', 'Sundeved', 'Sydals', 'Sønderborg']",2005
+Aabenraa,a249.htm,45905,74.1,34009,True,"['Bov', 'Lundtoft', 'Rødekro', 'Tinglev', 'Aabenraa']",2005
+Tønder,a247.htm,30956,73.0,22597,True,"['Bredebro', 'Højer', 'Løgumkloster', 'Nørre-Rangstrup', 'Skærbæk', 'Tønder']",2005
+Esbjerg,a256.htm,87531,65.8,57554,True,"['Bramming', 'Esbjerg', 'Ribe']",2005
+Fanø,a442563.htm,2499,81.3,2033,False,[],2005
+Haderslev,a234.htm,43121,73.3,31587,True,"['Gram', 'Haderslev', 'Vojens']",2005
+Vejen,a240.htm,31060,70.4,21873,True,"['Rødding', 'Brørup', 'Holsted', 'Vejen']",2005
+Kolding,a275.htm,65814,67.8,44623,True,"['Christiansfeld', 'Kolding', 'Lunderskov', 'Vamdrup']",2005
+Varde,a262.htm,37429,73.5,27525,True,"['Blaabjerg', 'Blåvandshuk', 'Helle', 'Varde', 'Ølgod']",2005
+Billund,a258.htm,19595,71.1,13929,True,"['Billund', 'Grindsted']",2005
+Vejle,a280.htm,79212,70.3,55666,True,"['Børkop', 'Egtved', 'Give', 'Jelling', 'Vejle']",2005
+Fredericia,a442607.htm,38013,65.4,24857,False,[],2005
+Hedensted,a274.htm,32696,75.1,24565,True,"['Hedensted', 'Juelsminde', 'Tørring-Uldum']",2005
+Horsens,a272.htm,59841,69.0,41301,True,"['Brædstrup', 'Gedved', 'Horsens']",2005
+Samsø,a464741.htm,3318,78.5,2603,False,[],2005
+Odder,a464727.htm,16008,74.6,11946,False,[],2005
+Ringkøbing-Skjern,a289.htm,42858,74.3,31825,True,"['Egvad', 'Holmsland', 'Ringkøbing', 'Skjern', 'Videbæk']",2005
+Herning,a284.htm,62871,73.7,46362,True,"['Aulum-Haderup', 'Herning', 'Trehøje', 'Aaskov']",2005
+Ikast-Brande,a287.htm,29640,73.9,21910,True,"['Nørre-Snede', 'Brande', 'Ikast']",2005
+Silkeborg,a320.htm,64126,71.8,46061,True,"['Gjern', 'Silkeborg', 'Them', 'Kjellerup']",2005
+Skanderborg,a322.htm,39879,74.6,29759,True,"['Galten', 'Hørning', 'Ry', 'Skanderborg']",2005
+Århus,a464751.htm,232507,71.8,167043,False,[],2005
+Syddjurs,a299.htm,30797,72.2,22240,True,"['Ebeltoft', 'Midtdjurs', 'Rosenholm', 'Rønde']",2005
+Norddjurs,a302.htm,29680,69.2,20553,True,"['Grenaa', 'Nørre Djurs', 'Rougsø', 'Sønderhald']",2005
+Favrskov,a304.htm,32440,74.3,24093,True,"['Hadsten', 'Hammel', 'Hinnerup', 'Hvorslev']",2005
+Holstebro,a286.htm,42945,70.5,30268,True,"['Holstebro', 'Ulfborg-Vemb', 'Vinderup']",2005
+Viborg,a342.htm,68526,71.6,49042,True,"['Bjerringbro', 'Fjends', 'Karup', 'Møldrup', 'Tjele', 'Viborg']",2005
+Randers,a314.htm,71663,68.7,49248,True,"['Langå', 'Nørhald', 'Purhus', 'Randers']",2005
+Mariagerfjord,a355.htm,31972,72.6,23223,True,"['Mariager', 'Arden', 'Hadsund', 'Hobro']",2005
+Lemvig,a288.htm,16936,77.3,13094,True,"['Lemvig', 'Thyborøn-Harboøre']",2005
+Struer,a291.htm,17275,73.9,12771,True,"['Struer', 'Thyholm']",2005
+Skive,a336.htm,36822,76.5,28155,True,"['Sallingsund', 'Skive', 'Spøttrup', 'Sundsøre']",2005
+Morsø,a475773.htm,17247,76.3,13166,False,[],2005
+Thisted,a340.htm,34971,72.1,25219,True,"['Hanstholm', 'Sydthy', 'Thisted']",2005
+Vesthimmerland,a372.htm,28709,72.3,20758,True,"['Aalestrup', 'Farsø', 'Løgstør', 'Aars']",2005
+Rebild,a366.htm,21075,75.7,15962,True,"['Nørager', 'Skørping', 'Støvring']",2005
+Aalborg,a369.htm,152761,64.6,98716,True,"['Hals', 'Nibe', 'Sejlflod', 'Aalborg']",2005
+Jammerbugt,a349.htm,29396,72.3,21263,True,"['Brovst', 'Fjerritslev', 'Pandrup', 'Aabybro']",2005
+Brønderslev-Dronninglund,a346.htm,26876,72.7,19537,True,"['Brønderslev', 'Dronninglund']",2005
+Hjørring,a354.htm,51575,69.2,35699,True,"['Hirtshals', 'Hjørring', 'Løkken-Vrå', 'Sindal']",2005
+Frederikshavn,a350.htm,49479,66.8,33041,True,"['Frederikshavn', 'Skagen', 'Sæby']",2005
+Læsø,a475825.htm,1726,78.5,1355,False,[],2005

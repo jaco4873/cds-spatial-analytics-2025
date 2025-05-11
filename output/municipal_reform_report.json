@@ -1,0 +1,752 @@
+{
+  "summary": {
+    "municipalities_before_reform": 98,
+    "municipalities_after_reform": 98,
+    "reduction_percentage": 0.0,
+    "total_councilors_before": 4597,
+    "total_councilors_after": 2520,
+    "councilors_reduction_percentage": 45.181640200130516,
+    "overall_turnout_before": 69.46152541762493,
+    "overall_turnout_after": 65.8152931134951,
+    "overall_turnout_change": -3.646232304129825,
+    "representation_density_before": 912.1028931912117,
+    "representation_density_after": 1699.7587301587303,
+    "representation_density_increase_percentage": 86.35602878220404
+  },
+  "voter_turnout": {
+    "overall_turnout": {
+      "2005": 69.46152541762493,
+      "2009": 65.8152931134951,
+      "change": -3.646232304129825
+    },
+    "average_turnout": {
+      "2005": 71.4734693877551,
+      "2009": 68.44183673469387,
+      "change": -3.031632653061237
+    },
+    "median_turnout": {
+      "2005": 72.1,
+      "2009": 68.2,
+      "change": -3.8999999999999915
+    },
+    "turnout_variance": {
+      "2005": 20.918257942352195,
+      "2009": 24.443695560698504,
+      "change": 3.5254376183463094
+    },
+    "top5_municipalities": {
+      "2005": [
+        {
+          "name": "Furesø",
+          "stemmeprocent": 81.8
+        },
+        {
+          "name": "Fanø",
+          "stemmeprocent": 81.3
+        },
+        {
+          "name": "Ærø",
+          "stemmeprocent": 80.8
+        },
+        {
+          "name": "Samsø",
+          "stemmeprocent": 78.5
+        },
+        {
+          "name": "Læsø",
+          "stemmeprocent": 78.5
+        }
+      ],
+      "2009": [
+        {
+          "name": "Læsø",
+          "stemmeprocent": 81.8
+        },
+        {
+          "name": "Fanø",
+          "stemmeprocent": 81.1
+        },
+        {
+          "name": "Ærø",
+          "stemmeprocent": 80.5
+        },
+        {
+          "name": "Samsø",
+          "stemmeprocent": 79.1
+        },
+        {
+          "name": "Allerød",
+          "stemmeprocent": 76.6
+        }
+      ]
+    },
+    "bottom5_municipalities": {
+      "2005": [
+        {
+          "name": "København",
+          "stemmeprocent": 58.7
+        },
+        {
+          "name": "Brøndby",
+          "stemmeprocent": 61.1
+        },
+        {
+          "name": "Tårnby",
+          "stemmeprocent": 62.3
+        },
+        {
+          "name": "Ishøj",
+          "stemmeprocent": 62.6
+        },
+        {
+          "name": "Glostrup",
+          "stemmeprocent": 63.7
+        }
+      ],
+      "2009": [
+        {
+          "name": "København",
+          "stemmeprocent": 54.4
+        },
+        {
+          "name": "Brøndby",
+          "stemmeprocent": 58.2
+        },
+        {
+          "name": "Hvidovre",
+          "stemmeprocent": 58.7
+        },
+        {
+          "name": "Ishøj",
+          "stemmeprocent": 60.3
+        },
+        {
+          "name": "Aalborg",
+          "stemmeprocent": 60.3
+        }
+      ]
+    },
+    "unchanged_municipalities": {
+      "count": 95,
+      "avg_turnout_2005": 71.46842105263158,
+      "avg_turnout_2009": 68.43684210526315,
+      "avg_change": -3.0315789473684305,
+      "increased_turnout": 7,
+      "decreased_turnout": 88,
+      "unchanged_turnout": 0,
+      "detail": [
+        {
+          "name": "Dragør",
+          "stemmeprocent_2005": 77.7,
+          "stemmeprocent_2009": 72.7,
+          "turnout_change": -5.0
+        },
+        {
+          "name": "Tårnby",
+          "stemmeprocent_2005": 62.3,
+          "stemmeprocent_2009": 60.7,
+          "turnout_change": -1.5999999999999943
+        },
+        {
+          "name": "Frederiksberg",
+          "stemmeprocent_2005": 64.7,
+          "stemmeprocent_2009": 64.2,
+          "turnout_change": -0.5
+        },
+        {
+          "name": "København",
+          "stemmeprocent_2005": 58.7,
+          "stemmeprocent_2009": 54.4,
+          "turnout_change": -4.300000000000004
+        },
+        {
+          "name": "Glostrup",
+          "stemmeprocent_2005": 63.7,
+          "stemmeprocent_2009": 60.6,
+          "turnout_change": -3.1000000000000014
+        },
+        {
+          "name": "Hvidovre",
+          "stemmeprocent_2005": 63.7,
+          "stemmeprocent_2009": 58.7,
+          "turnout_change": -5.0
+        },
+        {
+          "name": "Rødovre",
+          "stemmeprocent_2005": 64.0,
+          "stemmeprocent_2009": 60.4,
+          "turnout_change": -3.6000000000000014
+        },
+        {
+          "name": "Brøndby",
+          "stemmeprocent_2005": 61.1,
+          "stemmeprocent_2009": 58.2,
+          "turnout_change": -2.8999999999999986
+        },
+        {
+          "name": "Vallensbæk",
+          "stemmeprocent_2005": 73.5,
+          "stemmeprocent_2009": 70.0,
+          "turnout_change": -3.5
+        },
+        {
+          "name": "Albertslund",
+          "stemmeprocent_2005": 65.8,
+          "stemmeprocent_2009": 60.6,
+          "turnout_change": -5.199999999999996
+        },
+        {
+          "name": "Ishøj",
+          "stemmeprocent_2005": 62.6,
+          "stemmeprocent_2009": 60.3,
+          "turnout_change": -2.3000000000000043
+        },
+        {
+          "name": "Høje-Tåstrup",
+          "stemmeprocent_2005": 65.3,
+          "stemmeprocent_2009": 64.5,
+          "turnout_change": -0.7999999999999972
+        },
+        {
+          "name": "Egedal",
+          "stemmeprocent_2005": 77.1,
+          "stemmeprocent_2009": 73.7,
+          "turnout_change": -3.3999999999999915
+        },
+        {
+          "name": "Ballerup",
+          "stemmeprocent_2005": 68.5,
+          "stemmeprocent_2009": 64.1,
+          "turnout_change": -4.400000000000006
+        },
+        {
+          "name": "Herlev",
+          "stemmeprocent_2005": 67.1,
+          "stemmeprocent_2009": 63.6,
+          "turnout_change": -3.499999999999993
+        },
+        {
+          "name": "Gladsaxe",
+          "stemmeprocent_2005": 66.3,
+          "stemmeprocent_2009": 62.7,
+          "turnout_change": -3.5999999999999943
+        },
+        {
+          "name": "Gentofte",
+          "stemmeprocent_2005": 68.8,
+          "stemmeprocent_2009": 66.3,
+          "turnout_change": -2.5
+        },
+        {
+          "name": "Lyngby-Tårbæk",
+          "stemmeprocent_2005": 68.6,
+          "stemmeprocent_2009": 68.2,
+          "turnout_change": -0.3999999999999915
+        },
+        {
+          "name": "Furesø",
+          "stemmeprocent_2005": 81.8,
+          "stemmeprocent_2009": 74.8,
+          "turnout_change": -7.0
+        },
+        {
+          "name": "Rudersdal",
+          "stemmeprocent_2005": 76.1,
+          "stemmeprocent_2009": 71.1,
+          "turnout_change": -5.0
+        },
+        {
+          "name": "Hørsholm",
+          "stemmeprocent_2005": 72.2,
+          "stemmeprocent_2009": 72.0,
+          "turnout_change": -0.20000000000000284
+        },
+        {
+          "name": "Allerød",
+          "stemmeprocent_2005": 77.8,
+          "stemmeprocent_2009": 76.6,
+          "turnout_change": -1.2000000000000028
+        },
+        {
+          "name": "Bornholm",
+          "stemmeprocent_2005": 78.0,
+          "stemmeprocent_2009": 72.1,
+          "turnout_change": -5.900000000000006
+        },
+        {
+          "name": "Greve",
+          "stemmeprocent_2005": 68.8,
+          "stemmeprocent_2009": 67.0,
+          "turnout_change": -1.7999999999999972
+        },
+        {
+          "name": "Solrød",
+          "stemmeprocent_2005": 69.2,
+          "stemmeprocent_2009": 68.0,
+          "turnout_change": -1.2000000000000028
+        },
+        {
+          "name": "Roskilde",
+          "stemmeprocent_2005": 71.8,
+          "stemmeprocent_2009": 67.7,
+          "turnout_change": -4.099999999999994
+        },
+        {
+          "name": "Frederikssund",
+          "stemmeprocent_2005": 72.2,
+          "stemmeprocent_2009": 67.1,
+          "turnout_change": -5.1000000000000085
+        },
+        {
+          "name": "Hillerød",
+          "stemmeprocent_2005": 74.1,
+          "stemmeprocent_2009": 71.2,
+          "turnout_change": -2.8999999999999915
+        },
+        {
+          "name": "Gribskov",
+          "stemmeprocent_2005": 70.4,
+          "stemmeprocent_2009": 69.2,
+          "turnout_change": -1.2000000000000028
+        },
+        {
+          "name": "Fredensborg",
+          "stemmeprocent_2005": 70.7,
+          "stemmeprocent_2009": 67.8,
+          "turnout_change": -2.9000000000000057
+        },
+        {
+          "name": "Helsingør",
+          "stemmeprocent_2005": 66.0,
+          "stemmeprocent_2009": 67.4,
+          "turnout_change": 1.4000000000000057
+        },
+        {
+          "name": "Odsherred",
+          "stemmeprocent_2005": 70.2,
+          "stemmeprocent_2009": 68.6,
+          "turnout_change": -1.6000000000000085
+        },
+        {
+          "name": "Lejre",
+          "stemmeprocent_2005": 77.1,
+          "stemmeprocent_2009": 72.2,
+          "turnout_change": -4.8999999999999915
+        },
+        {
+          "name": "Kalundborg",
+          "stemmeprocent_2005": 69.0,
+          "stemmeprocent_2009": 64.8,
+          "turnout_change": -4.200000000000003
+        },
+        {
+          "name": "Holbæk",
+          "stemmeprocent_2005": 69.2,
+          "stemmeprocent_2009": 66.7,
+          "turnout_change": -2.5
+        },
+        {
+          "name": "Sorø",
+          "stemmeprocent_2005": 72.4,
+          "stemmeprocent_2009": 68.2,
+          "turnout_change": -4.200000000000003
+        },
+        {
+          "name": "Ringsted",
+          "stemmeprocent_2005": 68.3,
+          "stemmeprocent_2009": 65.5,
+          "turnout_change": -2.799999999999997
+        },
+        {
+          "name": "Køge",
+          "stemmeprocent_2005": 70.2,
+          "stemmeprocent_2009": 69.0,
+          "turnout_change": -1.2000000000000028
+        },
+        {
+          "name": "Stevns",
+          "stemmeprocent_2005": 74.6,
+          "stemmeprocent_2009": 71.0,
+          "turnout_change": -3.5999999999999943
+        },
+        {
+          "name": "Faxe",
+          "stemmeprocent_2005": 70.7,
+          "stemmeprocent_2009": 67.6,
+          "turnout_change": -3.1000000000000085
+        },
+        {
+          "name": "Næstved",
+          "stemmeprocent_2005": 69.0,
+          "stemmeprocent_2009": 64.5,
+          "turnout_change": -4.5
+        },
+        {
+          "name": "Slagelse",
+          "stemmeprocent_2005": 67.4,
+          "stemmeprocent_2009": 64.7,
+          "turnout_change": -2.700000000000003
+        },
+        {
+          "name": "Vordingborg",
+          "stemmeprocent_2005": 72.1,
+          "stemmeprocent_2009": 69.1,
+          "turnout_change": -3.0
+        },
+        {
+          "name": "Guldborgsund",
+          "stemmeprocent_2005": 72.5,
+          "stemmeprocent_2009": 67.1,
+          "turnout_change": -5.400000000000006
+        },
+        {
+          "name": "Lolland",
+          "stemmeprocent_2005": 72.6,
+          "stemmeprocent_2009": 64.4,
+          "turnout_change": -8.199999999999989
+        },
+        {
+          "name": "Langeland",
+          "stemmeprocent_2005": 76.0,
+          "stemmeprocent_2009": 72.4,
+          "turnout_change": -3.5999999999999943
+        },
+        {
+          "name": "Ærø",
+          "stemmeprocent_2005": 80.8,
+          "stemmeprocent_2009": 80.5,
+          "turnout_change": -0.29999999999999716
+        },
+        {
+          "name": "Svendborg",
+          "stemmeprocent_2005": 72.1,
+          "stemmeprocent_2009": 70.3,
+          "turnout_change": -1.7999999999999972
+        },
+        {
+          "name": "Faaborg-Midtfyn",
+          "stemmeprocent_2005": 75.1,
+          "stemmeprocent_2009": 73.0,
+          "turnout_change": -2.0999999999999943
+        },
+        {
+          "name": "Assens",
+          "stemmeprocent_2005": 74.0,
+          "stemmeprocent_2009": 69.4,
+          "turnout_change": -4.599999999999994
+        },
+        {
+          "name": "Middelfart",
+          "stemmeprocent_2005": 73.1,
+          "stemmeprocent_2009": 69.2,
+          "turnout_change": -3.8999999999999915
+        },
+        {
+          "name": "Odense",
+          "stemmeprocent_2005": 69.4,
+          "stemmeprocent_2009": 65.8,
+          "turnout_change": -3.6000000000000085
+        },
+        {
+          "name": "Kerteminde",
+          "stemmeprocent_2005": 77.5,
+          "stemmeprocent_2009": 73.2,
+          "turnout_change": -4.299999999999997
+        },
+        {
+          "name": "Nyborg",
+          "stemmeprocent_2005": 73.5,
+          "stemmeprocent_2009": 73.0,
+          "turnout_change": -0.5
+        },
+        {
+          "name": "Sønderborg",
+          "stemmeprocent_2005": 76.2,
+          "stemmeprocent_2009": 69.3,
+          "turnout_change": -6.900000000000006
+        },
+        {
+          "name": "Aabenraa",
+          "stemmeprocent_2005": 74.1,
+          "stemmeprocent_2009": 67.2,
+          "turnout_change": -6.8999999999999915
+        },
+        {
+          "name": "Tønder",
+          "stemmeprocent_2005": 73.0,
+          "stemmeprocent_2009": 68.1,
+          "turnout_change": -4.900000000000006
+        },
+        {
+          "name": "Esbjerg",
+          "stemmeprocent_2005": 65.8,
+          "stemmeprocent_2009": 61.3,
+          "turnout_change": -4.5
+        },
+        {
+          "name": "Fanø",
+          "stemmeprocent_2005": 81.3,
+          "stemmeprocent_2009": 81.1,
+          "turnout_change": -0.20000000000000284
+        },
+        {
+          "name": "Haderslev",
+          "stemmeprocent_2005": 73.3,
+          "stemmeprocent_2009": 69.6,
+          "turnout_change": -3.700000000000003
+        },
+        {
+          "name": "Vejen",
+          "stemmeprocent_2005": 70.4,
+          "stemmeprocent_2009": 67.2,
+          "turnout_change": -3.200000000000003
+        },
+        {
+          "name": "Kolding",
+          "stemmeprocent_2005": 67.8,
+          "stemmeprocent_2009": 68.1,
+          "turnout_change": 0.29999999999999716
+        },
+        {
+          "name": "Varde",
+          "stemmeprocent_2005": 73.5,
+          "stemmeprocent_2009": 66.2,
+          "turnout_change": -7.299999999999997
+        },
+        {
+          "name": "Billund",
+          "stemmeprocent_2005": 71.1,
+          "stemmeprocent_2009": 67.7,
+          "turnout_change": -3.3999999999999915
+        },
+        {
+          "name": "Vejle",
+          "stemmeprocent_2005": 70.3,
+          "stemmeprocent_2009": 66.0,
+          "turnout_change": -4.299999999999997
+        },
+        {
+          "name": "Fredericia",
+          "stemmeprocent_2005": 65.4,
+          "stemmeprocent_2009": 68.3,
+          "turnout_change": 2.8999999999999915
+        },
+        {
+          "name": "Hedensted",
+          "stemmeprocent_2005": 75.1,
+          "stemmeprocent_2009": 71.1,
+          "turnout_change": -4.0
+        },
+        {
+          "name": "Horsens",
+          "stemmeprocent_2005": 69.0,
+          "stemmeprocent_2009": 62.3,
+          "turnout_change": -6.700000000000003
+        },
+        {
+          "name": "Samsø",
+          "stemmeprocent_2005": 78.5,
+          "stemmeprocent_2009": 79.1,
+          "turnout_change": 0.5999999999999943
+        },
+        {
+          "name": "Odder",
+          "stemmeprocent_2005": 74.6,
+          "stemmeprocent_2009": 72.9,
+          "turnout_change": -1.6999999999999886
+        },
+        {
+          "name": "Ringkøbing-Skjern",
+          "stemmeprocent_2005": 74.3,
+          "stemmeprocent_2009": 70.3,
+          "turnout_change": -4.0
+        },
+        {
+          "name": "Herning",
+          "stemmeprocent_2005": 73.7,
+          "stemmeprocent_2009": 71.1,
+          "turnout_change": -2.6000000000000085
+        },
+        {
+          "name": "Ikast-Brande",
+          "stemmeprocent_2005": 73.9,
+          "stemmeprocent_2009": 71.4,
+          "turnout_change": -2.5
+        },
+        {
+          "name": "Silkeborg",
+          "stemmeprocent_2005": 71.8,
+          "stemmeprocent_2009": 68.6,
+          "turnout_change": -3.200000000000003
+        },
+        {
+          "name": "Skanderborg",
+          "stemmeprocent_2005": 74.6,
+          "stemmeprocent_2009": 70.8,
+          "turnout_change": -3.799999999999997
+        },
+        {
+          "name": "Århus",
+          "stemmeprocent_2005": 71.8,
+          "stemmeprocent_2009": 63.7,
+          "turnout_change": -8.099999999999994
+        },
+        {
+          "name": "Syddjurs",
+          "stemmeprocent_2005": 72.2,
+          "stemmeprocent_2009": 67.9,
+          "turnout_change": -4.299999999999997
+        },
+        {
+          "name": "Norddjurs",
+          "stemmeprocent_2005": 69.2,
+          "stemmeprocent_2009": 66.2,
+          "turnout_change": -3.0
+        },
+        {
+          "name": "Favrskov",
+          "stemmeprocent_2005": 74.3,
+          "stemmeprocent_2009": 70.5,
+          "turnout_change": -3.799999999999997
+        },
+        {
+          "name": "Holstebro",
+          "stemmeprocent_2005": 70.5,
+          "stemmeprocent_2009": 75.5,
+          "turnout_change": 5.0
+        },
+        {
+          "name": "Viborg",
+          "stemmeprocent_2005": 71.6,
+          "stemmeprocent_2009": 67.6,
+          "turnout_change": -4.0
+        },
+        {
+          "name": "Randers",
+          "stemmeprocent_2005": 68.7,
+          "stemmeprocent_2009": 65.1,
+          "turnout_change": -3.6000000000000085
+        },
+        {
+          "name": "Mariagerfjord",
+          "stemmeprocent_2005": 72.6,
+          "stemmeprocent_2009": 68.2,
+          "turnout_change": -4.3999999999999915
+        },
+        {
+          "name": "Lemvig",
+          "stemmeprocent_2005": 77.3,
+          "stemmeprocent_2009": 74.9,
+          "turnout_change": -2.3999999999999915
+        },
+        {
+          "name": "Struer",
+          "stemmeprocent_2005": 73.9,
+          "stemmeprocent_2009": 75.3,
+          "turnout_change": 1.3999999999999915
+        },
+        {
+          "name": "Skive",
+          "stemmeprocent_2005": 76.5,
+          "stemmeprocent_2009": 74.3,
+          "turnout_change": -2.200000000000003
+        },
+        {
+          "name": "Morsø",
+          "stemmeprocent_2005": 76.3,
+          "stemmeprocent_2009": 73.9,
+          "turnout_change": -2.3999999999999915
+        },
+        {
+          "name": "Thisted",
+          "stemmeprocent_2005": 72.1,
+          "stemmeprocent_2009": 68.3,
+          "turnout_change": -3.799999999999997
+        },
+        {
+          "name": "Vesthimmerland",
+          "stemmeprocent_2005": 72.3,
+          "stemmeprocent_2009": 69.5,
+          "turnout_change": -2.799999999999997
+        },
+        {
+          "name": "Rebild",
+          "stemmeprocent_2005": 75.7,
+          "stemmeprocent_2009": 73.9,
+          "turnout_change": -1.7999999999999972
+        },
+        {
+          "name": "Aalborg",
+          "stemmeprocent_2005": 64.6,
+          "stemmeprocent_2009": 60.3,
+          "turnout_change": -4.299999999999997
+        },
+        {
+          "name": "Jammerbugt",
+          "stemmeprocent_2005": 72.3,
+          "stemmeprocent_2009": 71.0,
+          "turnout_change": -1.2999999999999972
+        },
+        {
+          "name": "Hjørring",
+          "stemmeprocent_2005": 69.2,
+          "stemmeprocent_2009": 65.6,
+          "turnout_change": -3.6000000000000085
+        },
+        {
+          "name": "Frederikshavn",
+          "stemmeprocent_2005": 66.8,
+          "stemmeprocent_2009": 64.2,
+          "turnout_change": -2.5999999999999943
+        },
+        {
+          "name": "Læsø",
+          "stemmeprocent_2005": 78.5,
+          "stemmeprocent_2009": 81.8,
+          "turnout_change": 3.299999999999997
+        }
+      ]
+    }
+  },
+  "representation_density": {
+    "total_councilors": {
+      "2005": 4597,
+      "2009": 2520,
+      "change": -2077,
+      "percent_change": -45.181640200130516
+    },
+    "overall_density": {
+      "2005": 912.1028931912117,
+      "2009": 1699.7587301587303,
+      "change": 787.6558369675186,
+      "percent_change": 86.35602878220404
+    },
+    "avg_municipal_density": {
+      "2005": 912.1028931912117,
+      "2009": 1699.7587301587305,
+      "change": 787.6558369675188,
+      "percent_change": 86.35602878220406
+    },
+    "municipalities_count": {
+      "2005": 271,
+      "2009": 98,
+      "change": -173,
+      "percent_change": -63.837638376383765
+    }
+  },
+  "quasi_experimental_comparison": {
+    "unchanged_municipalities": {
+      "count": 32,
+      "turnout_2005": 69.328125,
+      "turnout_2009": 67.04374999999999,
+      "turnout_change": -2.2843750000000114,
+      "population_2005": 48934.03125,
+      "population_2009": 50153.375,
+      "population_change": 1219.34375
+    },
+    "merged_municipalities": {
+      "count": 66,
+      "turnout_2005": 72.51363636363635
+    }
+  }
+}

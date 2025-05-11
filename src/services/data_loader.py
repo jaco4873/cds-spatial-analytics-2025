@@ -1,167 +1,218 @@
-#!/usr/bin/env python3
-# municipal_reform/data_loader.py
-
-import geopandas as gpd
-import pandas as pd
 import logging
-import os
 from pathlib import Path
+import pandas as pd
+import geopandas as gpd
+from skrub import fuzzy_join
 
 
 class DataLoader:
-    """Handles loading, cleaning, and preparing data for municipal reform analysis."""
-
     def __init__(self):
         self.logger = logging.getLogger(__name__)
-        self.municipalities = None
-        self.ensure_output_dir()
+        self.data_dir = Path("data")
+        self.election_data_dir = self.data_dir / "kmdvalg"
+        self.geodata_dir = self.data_dir / "geodata"
+        self.geodata_dir.mkdir(exist_ok=True, parents=True)
 
-    def ensure_output_dir(self):
-        """Create output directory if it doesn't exist."""
-        os.makedirs("output", exist_ok=True)
+    def load_election_data(self):
+        """Load election data from combined CSV file and split by year.
 
-    def load_municipal_data(
-        self, shapefile_path="data/wrangled_data/wrangled_data.shp"
-    ):
-        """Load municipal data from wrangled shapefile."""
-        self.logger.info("Loading wrangled data...")
-        root_dir = Path(__file__).parent.parent.parent
-        self.municipalities = gpd.read_file(root_dir / shapefile_path)
-        self.logger.info("Logging head of wrangled data:")
-        self.logger.info(self.municipalities.head())
-        self.logger.info("Logging shape of wrangled data:")
-        self.logger.info(self.municipalities.shape)
-        return self.municipalities
+        Returns:
+            tuple: Two DataFrames containing 2005 and 2009 election data
+        """
+        combined_path = self.election_data_dir / "kommune_data_combined.csv"
 
-    def clean_data(self):
-        """Clean the dataset by removing rows with missing essential data."""
-        if self.municipalities is None:
-            self.logger.error("No data loaded. Call load_municipal_data first.")
-            return None
+        if not combined_path.exists():
+            raise FileNotFoundError("Combined KMD Valg data file not found")
 
-        # Remove rows with missing essential data
-        self.municipalities = self.municipalities.dropna(
-            subset=["KommnNr", "VtrTrnt"], how="any"
-        )
+        # Explicitly specify utf-8-sig encoding when loading the CSV
+        combined_df = pd.read_csv(combined_path, encoding="utf-8-sig")
+
+        # Split by year
+        election_2005_df = combined_df[combined_df["year"] == 2005]
+        election_2009_df = combined_df[combined_df["year"] == 2009]
+
         self.logger.info(
-            f"Shape after removing NaN values: {self.municipalities.shape}"
+            f"Loaded {len(election_2005_df)} records for 2005 and {len(election_2009_df)} records for 2009"
         )
 
-        # Fix voter turnout ratio where it exceeds 1.0 (likely data error)
-        self.municipalities.loc[self.municipalities["VtrTrnt"] > 1.0, "VtrTrnt"] = (
-            self.municipalities.loc[self.municipalities["VtrTrnt"] > 1.0, "VtrTrnt"]
-            / 10
+        return election_2005_df, election_2009_df
+
+    def load_geographical_data(self):
+        """Load Danish municipality boundary data from local shapefile.
+
+        Returns:
+            GeoDataFrame: A geodataframe containing Danish municipality boundaries
+        """
+        # Define path to shapefile
+        shapefile_path = str(
+            self.geodata_dir
+            / "geoBoundaries-DNK-ADM2-all"
+            / "geoBoundaries-DNK-ADM2.shp"
         )
+
+        try:
+            self.logger.info(f"Loading municipality boundaries from: {shapefile_path}")
+            # Load the shapefile using geopandas with pyogrio engine
+            gdf = gpd.read_file(shapefile_path, engine="pyogrio")
+
+            # Fix encoding issues in shapeName column
+            if "shapeName" in gdf.columns:
+                # Create a mapping for known encoding issues
+                encoding_fixes = {
+                    "Ã\x86rÃ¸": "Ærø",
+                    "SÃ¸nderborg": "Sønderborg",
+                    "NÃ¦stved": "Næstved",
+                    "TÃ¸nder": "Tønder",
+                    "FanÃ¸": "Fanø",
+                    "KÃ¸ge": "Køge",
+                    "SolrÃ¸d": "Solrød",
+                    "SorÃ¸": "Sorø",
+                    "DragÃ¸r": "Dragør",
+                    "Nordfyn": "Nordfyns",
+                    "IshÃ¸j": "Ishøj",
+                    "VallensbÃ¦k": "Vallensbæk",
+                    "TÃ¥rnby": "Tårnby",
+                    "BrÃ¸ndby": "Brøndby",
+                    "Copenhagen": "København",
+                    "HÃ¸je-Taastrup": "Høje-Tåstrup",
+                    "RÃ¸dovre": "Rødovre",
+                    "HolbÃ¦k": "Holbæk",
+                    "Lyngby-TaarbÃ¦k": "Lyngby-Tårbæk",
+                    "FuresÃ¸": "Furesø",
+                    "HÃ¸rsholm": "Hørsholm",
+                    "HillerÃ¸d": "Hillerød",
+                    "SamsÃ¸": "Samsø",
+                    "HalsnÃ¦s": "Halsnæs",
+                    "HelsingÃ¸r": "Helsingør",
+                    "RingkÃ¸bing-Skjern": "Ringkøbing-Skjern",
+                    "Aarhus": "Århus",
+                    "MorsÃ¸": "Morsø",
+                    "LÃ¦sÃ¸": "Læsø",
+                    "BrÃ¸nderslev": "Brønderslev",
+                    "HjÃ¸rring": "Hjørring",
+                    "AllerÃ¸d": "Allerød",
+                }
+
+                # Apply the encoding fixes
+                gdf["shapeName"] = gdf["shapeName"].apply(
+                    lambda name: encoding_fixes.get(name, name)
+                )
+
+                # Add lowercase name column for case-insensitive matching
+                gdf["name_lower"] = gdf["shapeName"].str.lower()
+
+            self.logger.info(
+                f"Successfully loaded {len(gdf)} municipalities from shapefile"
+            )
+            return gdf
+        except Exception as e:
+            self.logger.error(f"Failed to load shapefile data: {e}")
+            raise FileNotFoundError(
+                f"Could not load Danish municipality boundary data: {e}"
+            )
+
+    def prepare_spatial_data(self) -> tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
+        """Prepare spatial data for visualization by merging election data with geographical boundaries.
+
+        Returns:
+            Tuple[GeoDataFrame, GeoDataFrame]: GeoDataFrames for 2005 and 2009 with electoral data
+        """
+        # Load data
+        election_2005, election_2009 = self.load_election_data()
+        geo_df = self.load_geographical_data()
+
+        # Define mappings from 2005 names to 2009 names
+        mapping_2005_to_2009 = {
+            "Frederiksværk-Hundested": "Halsnæs",
+            "Bogense": "Nordfyns",
+            "Brønderslev-Dronninglund": "Brønderslev",
+        }
+
+        # Add canonical name column
+        election_2005["canonical_name"] = (
+            election_2005["name"]
+            .map(mapping_2005_to_2009)
+            .fillna(election_2005["name"])
+        )
+        election_2009["canonical_name"] = election_2009["name"]
+
+        # Log the standardized names
+        self.logger.info("Municipality name standardization applied:")
+        for old_name, new_name in mapping_2005_to_2009.items():
+            self.logger.info(f"  {old_name} (2005) → {new_name} (2009)")
+
+        # Create normalized columns for matching
+        geo_df["name_match"] = geo_df["shapeName"]
+        election_2005["name_match"] = election_2005["canonical_name"]
+        election_2009["name_match"] = election_2009["canonical_name"]
+
+        # Improve fuzzy matching parameters
+        self.logger.info("Performing fuzzy join for 2005 data")
+        joined_2005 = fuzzy_join(
+            left=geo_df,
+            right=election_2005,
+            left_on="name_match",
+            right_on="name_match",
+            suffix="_election",
+            max_dist=0.3,  # Reduced threshold for stricter matching
+            ref_dist="random_pairs",
+            add_match_info=True,
+        )
+
+        self.logger.info("Performing fuzzy join for 2009 data")
+        joined_2009 = fuzzy_join(
+            left=geo_df,
+            right=election_2009,
+            left_on="name_match",
+            right_on="name_match",
+            suffix="_election",
+            max_dist=0.3,  # Reduced threshold for stricter matching
+            ref_dist="random_pairs",
+            add_match_info=True,
+        )
+
+        # Convert back to GeoDataFrames
+        merged_2005 = gpd.GeoDataFrame(joined_2005, geometry="geometry")
+        merged_2009 = gpd.GeoDataFrame(joined_2009, geometry="geometry")
+
+        # Log matching statistics
+        match_rate_2005 = (
+            merged_2005["name_election"].notna().sum() / len(merged_2005)
+        ) * 100
+        match_rate_2009 = (
+            merged_2009["name_election"].notna().sum() / len(merged_2009)
+        ) * 100
+
+        self.logger.info(f"Match rate for 2005 data: {match_rate_2005:.2f}%")
+        self.logger.info(f"Match rate for 2009 data: {match_rate_2009:.2f}%")
+
+        # Log unmatched municipalities for manual inspection
+        if match_rate_2005 < 100:
+            unmatched = merged_2005[merged_2005["name_election"].isna()][
+                "shapeName"
+            ].tolist()
+            self.logger.warning(f"Unmatched municipalities in 2005 data: {unmatched}")
+
+        if match_rate_2009 < 100:
+            unmatched = merged_2009[merged_2009["name_election"].isna()][
+                "shapeName"
+            ].tolist()
+            self.logger.warning(f"Unmatched municipalities in 2009 data: {unmatched}")
+
+        # Create a mapping to standardize display names (use 2009 names)
+        display_name_mapping = {
+            "Frederiksværk-Hundested": "Halsnæs",
+            "Bogense": "Nordfyns",
+            "Brønderslev-Dronninglund": "Brønderslev",
+        }
+
+        # Apply the display name standardization to both years for consistency
+        for df in [merged_2005, merged_2009]:
+            for old_name, new_name in display_name_mapping.items():
+                df.loc[df["name_election"] == old_name, "name_election"] = new_name
+
         self.logger.info(
-            f"Max voter turnout after correction: {self.municipalities['VtrTrnt'].max()}"
+            "Standardized municipality names to use 2009 naming conventions"
         )
 
-        # Display basic information
-        self.logger.info(f"Dataset shape: {self.municipalities.shape}")
-        self.logger.info("\nColumns:")
-        self.logger.info(self.municipalities.columns.tolist())
-        self.logger.info("\nSample data:")
-        self.logger.info(self.municipalities.head())
-        self.logger.info("\nMissing values:")
-        self.logger.info(self.municipalities.isnull().sum())
-
-        return self.municipalities
-
-    def load_voter_data(self, voter_data_path="data/ValgData2009.csv"):
-        """Load voter turnout data from CSV and merge with municipal data."""
-        if self.municipalities is None:
-            self.logger.error("No data loaded. Call load_municipal_data first.")
-            return None
-
-        self.logger.info("\nLoading 2009 voter data...")
-        root_dir = Path(__file__).parent.parent.parent
-        valgdata2009 = pd.read_csv(root_dir / voter_data_path, sep=";")
-        self.logger.info(f"2009 data shape: {valgdata2009.shape}")
-
-        # Rename columns for clarity
-        valgdata2009.columns = [
-            "Gruppe",
-            "KommuneNr",
-            "KV2009_Stemmeberettigede",
-            "KV2009_Afgivne",
-        ]
-
-        # Calculate 2009 turnout
-        valgdata2009["VoterTurnout2009"] = (
-            valgdata2009["KV2009_Afgivne"] / valgdata2009["KV2009_Stemmeberettigede"]
-        )
-
-        # Convert kommune number to numeric to match with shapefile
-        valgdata2009["KommuneNr"] = pd.to_numeric(valgdata2009["KommuneNr"])
-
-        # Merge with municipal data - using a left join to keep all municipalities
-        self.municipalities = self.municipalities.merge(
-            valgdata2009[
-                [
-                    "KommuneNr",
-                    "KV2009_Stemmeberettigede",
-                    "KV2009_Afgivne",
-                    "VoterTurnout2009",
-                ]
-            ],
-            left_on="KommnNr",
-            right_on="KommuneNr",
-            how="left",
-        )
-
-        self.logger.info(f"Shape after merging 2009 data: {self.municipalities.shape}")
-        return self.municipalities
-
-    def prepare_data(self):
-        """Prepare data for analysis by renaming columns and calculating metrics."""
-        if self.municipalities is None:
-            self.logger.error("No data loaded. Call load_municipal_data first.")
-            return None
-
-        # Rename our 2005 columns for clarity
-        self.municipalities = self.municipalities.rename(
-            columns={
-                "KV2005___S": "KV2005_Stemmeberettigede",  # Eligible voters
-                "KV2005___A": "KV2005_Afgivne",  # Actual votes
-                "VtrTrnt": "VoterTurnout2005",  # Turnout as ratio
-                "navn_x": "MunicipalityName",
-                "navn_y": "MunicipalityName2",
-            }
-        )
-
-        # Convert turnout to percentage for analysis
-        self.municipalities["VoterTurnout2005_pct"] = (
-            self.municipalities["VoterTurnout2005"] * 100
-        )
-        self.municipalities["VoterTurnout2009_pct"] = (
-            self.municipalities["VoterTurnout2009"] * 100
-        )
-
-        # Calculate turnout change (in percentage points)
-        self.municipalities["turnout_change"] = (
-            self.municipalities["VoterTurnout2009_pct"]
-            - self.municipalities["VoterTurnout2005_pct"]
-        )
-
-        self.logger.info("\nTurnout change statistics:")
-        self.logger.info(self.municipalities["turnout_change"].describe())
-
-        # Identify merged municipalities based on boundary changes
-        self.municipalities["boundary_changed"] = self.municipalities["dist"] > 0
-        self.municipalities["merged"] = self.municipalities["boundary_changed"]
-
-        # Count boundary-changed vs unchanged municipalities
-        boundary_changed_count = self.municipalities["boundary_changed"].sum()
-        unchanged_count = len(self.municipalities) - boundary_changed_count
-        self.logger.info(
-            f"\nBoundary changes: {boundary_changed_count} changed, {unchanged_count} unchanged"
-        )
-
-        # Count merged vs unchanged using our definition
-        merged_count = self.municipalities["merged"].sum()
-        unchanged_count = len(self.municipalities) - merged_count
-        self.logger.info(
-            f"\nMunicipalities: {merged_count} merged, {unchanged_count} unchanged"
-        )
-
-        return self.municipalities
+        return merged_2005, merged_2009
