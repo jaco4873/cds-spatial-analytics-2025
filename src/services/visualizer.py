@@ -9,8 +9,6 @@ from matplotlib_scalebar.scalebar import ScaleBar
 import matplotlib.image as mpimg
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 from services.data_analyzer import DataAnalyzer
-import geopandas as gpd
-import random
 from adjustText import adjust_text
 
 
@@ -221,6 +219,9 @@ class Visualizer:
         # Add basemap
         self.add_basemap(ax)
 
+        # Mask the Copenhagen area in the main map
+        self.mask_copenhagen_area(ax, year)
+
         # Create the Copenhagen inset map with the same color scale
         copenhagen_image = self.create_copenhagen_map(
             year,
@@ -287,6 +288,9 @@ class Visualizer:
 
         # Add basemap
         self.add_basemap(ax)
+
+        # Mask the Copenhagen area in the main map (use 2009 to match inset)
+        self.mask_copenhagen_area(ax, 2009)
 
         # Create the Copenhagen inset with the same color scale
         copenhagen_image = self.create_copenhagen_map(
@@ -363,10 +367,35 @@ class Visualizer:
         highest_density_row = spatial_data_web.loc[spatial_data_web["density"].idxmax()]
         highest_density_value = highest_density_row["density"]
 
+        # Get Copenhagen area for exclusion
+        metro_2005, metro_2009 = (
+            self.data_analyzer.data_loader.get_copenhagen_metropolitan_area()
+        )
+        metro_data = metro_2005 if year == 2005 else metro_2009
+        metro_data_web = self.prepare_spatial_data_for_mapping(metro_data)
+
+        # Dissolve to get a single polygon for easy containment checking
+        if len(metro_data_web) > 1:
+            metro_dissolved = metro_data_web.copy()
+            metro_dissolved["dissolve_key"] = 1
+            metro_mask = metro_dissolved.dissolve(by="dissolve_key")
+        else:
+            metro_mask = metro_data_web
+
         for _, row in spatial_data_web.iterrows():
             if row["density"] > 6000:
                 # Get the centroid of the municipality
                 centroid = row.geometry.centroid
+
+                # Skip if this centroid falls within the Copenhagen area
+                point_in_copenhagen = False
+                for _, excl_row in metro_data_web.iterrows():
+                    if excl_row.geometry.contains(centroid):
+                        point_in_copenhagen = True
+                        break
+
+                if point_in_copenhagen:
+                    continue
 
                 # Add offset to x-coordinate for Copenhagen
                 x_offset = 0
@@ -390,6 +419,9 @@ class Visualizer:
 
         # Add basemap
         self.add_basemap(ax)
+
+        # Mask the Copenhagen area in the main map
+        self.mask_copenhagen_area(ax, year)
 
         # Add Copenhagen inset with same normalization
         copenhagen_image = self.create_copenhagen_map(
@@ -434,10 +466,10 @@ class Visualizer:
         )
 
         merged_munis_2005 = self.data_analyzer.election_2005_df[
-            self.data_analyzer.election_2005_df[merge_column] == True
+            self.data_analyzer.election_2005_df[merge_column] == True  # noqa: E712
         ]
         unmerged_munis_2005 = self.data_analyzer.election_2005_df[
-            self.data_analyzer.election_2005_df[merge_column] == False
+            self.data_analyzer.election_2005_df[merge_column] == False  # noqa: E712
         ]
 
         # Calculate weighted average turnout for merged and unmerged municipalities in 2005
@@ -527,7 +559,7 @@ class Visualizer:
         # Add a subtle subtitle with methodology note
         ax.text(
             0.5,
-            0.97,
+            0.99999,
             "Weighted by municipality size (eligible voters)",
             transform=ax.transAxes,
             fontsize=11,
@@ -540,7 +572,7 @@ class Visualizer:
         # Improve x-axis styling
         ax.set_xticks(x)
         ax.set_xticklabels(
-            ["Overall", "Merged\nMunicipalities", "Unchanged\nMunicipalities"],
+            ["Overall", "Merged", "Not Merged"],
             fontsize=14,
         )
         ax.tick_params(axis="x", length=0, pad=10)
@@ -552,7 +584,7 @@ class Visualizer:
         ax.set_ylabel("Voter Turnout (%)", fontsize=14, labelpad=15)
         ax.tick_params(axis="y", labelsize=12)
 
-        # Add value labels on the bars with improved styling
+        # Add value labels on the bars
         def add_labels(rects, offset=0.5):
             for rect in rects:
                 height = rect.get_height()
@@ -593,55 +625,6 @@ class Visualizer:
             color="#666666",
         )
 
-        # Add trend lines for each group to show the change more clearly
-        for i, (y_2005, y_2009) in enumerate(
-            [
-                (overall_2005, overall_2009),
-                (merged_avg_2005, merged_avg_2009),
-                (unmerged_avg_2005, unmerged_avg_2009),
-            ]
-        ):
-            # Add trend lines connecting the bars
-            ax.plot(
-                [x[i] - width / 2, x[i] + width / 2],
-                [y_2005, y_2009],
-                color="#444444",
-                linestyle=":",
-                linewidth=1.5,
-                alpha=0.5,
-                zorder=2,
-            )
-
-            # Add trend arrows indicating direction of change
-            if y_2009 < y_2005:
-                ax.annotate(
-                    f"-{y_2005 - y_2009:.1f}",
-                    xy=(x[i], (y_2005 + y_2009) / 2),
-                    xytext=(0, 0),
-                    textcoords="offset points",
-                    ha="center",
-                    va="center",
-                    fontsize=9,
-                    color="#d32f2f",  # Red
-                    bbox=dict(
-                        boxstyle="round,pad=0.3", fc="white", ec="#d32f2f", alpha=0.7
-                    ),
-                )
-            else:
-                ax.annotate(
-                    f"+{y_2009 - y_2005:.1f}",
-                    xy=(x[i], (y_2005 + y_2009) / 2),
-                    xytext=(0, 0),
-                    textcoords="offset points",
-                    ha="center",
-                    va="center",
-                    fontsize=9,
-                    color="#2e7d32",  # Green
-                    bbox=dict(
-                        boxstyle="round,pad=0.3", fc="white", ec="#2e7d32", alpha=0.7
-                    ),
-                )
-
         # Save the figure with high resolution
         output_path = self.output_dir / "turnout_comparison_chart.png"
         plt.savefig(output_path, dpi=300, bbox_inches="tight", facecolor="white")
@@ -668,9 +651,9 @@ class Visualizer:
 
         # Create a binary colormap for merged status
         colors = [
-            "#FDE725",
-            "#3e4989",
-        ]  # Viridis dark blue for unchanged, bright yellow for merged
+            "#4174ae",
+            "#d98e43",
+        ]
         cmap = plt.matplotlib.colors.ListedColormap(colors)
 
         # Plot the data with binary coloring
@@ -685,7 +668,7 @@ class Visualizer:
                 "title": "Municipality Status",
                 "frameon": True,
                 "loc": "center",
-                "bbox_to_anchor": (0.85, 0.4),
+                "bbox_to_anchor": (0.85, 0.35),
                 "title_fontsize": 9,
                 "prop": {"size": 8},
                 "alignment": "left",
@@ -698,6 +681,9 @@ class Visualizer:
         # Add basemap
         self.add_basemap(ax)
 
+        # Mask the Copenhagen area in the main map
+        self.mask_copenhagen_area(ax, 2005)
+
         # First merge the turnout change data with the base map
         merged_data = spatial_2005_web.merge(
             turnout_change_gdf[["shapeName", "turnout_change"]],
@@ -705,6 +691,12 @@ class Visualizer:
             right_on="shapeName",
             how="left",
         )
+
+        # Get Copenhagen metropolitan area for label exclusion
+        metro_2005, _ = (
+            self.data_analyzer.data_loader.get_copenhagen_metropolitan_area()
+        )
+        metro_data_web = self.prepare_spatial_data_for_mapping(metro_2005)
 
         # Add centroid labels with turnout change values using adjustText
         self.add_centroid_labels(
@@ -722,7 +714,11 @@ class Visualizer:
                 "force_points": 0.2,
                 "force_text": 0.8,
                 "expand_points": (1.5, 1.5),
+                "arrowprops": dict(
+                    arrowstyle="->", color="gray", alpha=0.9, lw=0.8, zorder=15
+                ),
             },
+            exclude_geometries=metro_data_web,  # Exclude labels in the Copenhagen area
         )
 
         # Create and add Copenhagen inset with both merger status coloring and turnout change labels
@@ -743,14 +739,14 @@ class Visualizer:
                 "adjust_text_args": {
                     "expand_points": (2.0, 2.0),
                     "force_text": 0.8,
-                    "arrowprops": dict(arrowstyle="-", color="gray", alpha=0.6, lw=0.7),
+                    "arrowprops": dict(
+                        arrowstyle="->", color="gray", alpha=0.9, lw=0.8, zorder=15
+                    ),
                 },
             },
         )
 
-        self.add_copenhagen_inset_from_image(
-            ax, copenhagen_image, position=(0.8, 0.75), size=0.1
-        )
+        self.add_copenhagen_inset_from_image(ax, copenhagen_image)
 
         # Add map elements
         self.add_map_elements(
@@ -856,6 +852,29 @@ class Visualizer:
 
         metro_data_web.plot(**plot_kwargs)
 
+        # Special handling for high density values in the inset
+        if column == "density":
+            # Find municipalities with density > 6000 in the Copenhagen area
+            high_density_munis = metro_data_web[metro_data_web["density"] > 6000]
+
+            # Add special labels for high density municipalities
+            for _, row in high_density_munis.iterrows():
+                centroid = row.geometry.centroid
+
+                # Add label with density value
+                ax.text(
+                    centroid.x + 4000,
+                    centroid.y,
+                    f"{int(row['density'])}",
+                    fontsize=20,
+                    ha="center",
+                    va="center",
+                    fontweight="bold",
+                    color="white",
+                    bbox=dict(facecolor="black", alpha=0.5, pad=1),
+                    zorder=5,
+                )
+
         # Add centroid labels if requested
         if add_labels:
             # Use the specified label column or fall back to the main column
@@ -863,9 +882,9 @@ class Visualizer:
 
             # Check if the label column exists in the data
             if label_col in metro_data_web.columns:
-                # Default label kwargs
+                # Default label kwargs with a larger fontsize for better visibility in the inset
                 default_kwargs = {
-                    "fontsize": 5,  # Smaller font for inset
+                    "fontsize": 7,  # Larger font for inset visibility
                     "pad": 0.3,  # Smaller padding for inset
                     "alpha": 0.85,  # Slightly more opaque for visibility
                 }
@@ -874,7 +893,7 @@ class Visualizer:
                 if label_kwargs is not None:
                     default_kwargs.update(label_kwargs)
 
-                # Add the labels
+                # Add the labels (no exclusion here - we want all labels in the inset)
                 self.add_centroid_labels(
                     ax=ax, gdf=metro_data_web, value_column=label_col, **default_kwargs
                 )
@@ -894,6 +913,19 @@ class Visualizer:
         ax.set_frame_on(False)  # Removes the frame
         ax.margins(0)  # Minimize margins
 
+        # Add a smaller scale bar suitable for the inset
+        inset_scalebar = ScaleBar(
+            dx=1.0,
+            units="m",  # UTM uses meters
+            location="lower right",
+            frameon=False,
+            scale_loc="top",
+            font_properties={"size": 20},
+            length_fraction=0.22,
+            height_fraction=0.015,
+        )
+        ax.add_artist(inset_scalebar)
+
         # Apply tight layout to reduce whitespace
         fig.tight_layout(pad=0)
 
@@ -906,7 +938,7 @@ class Visualizer:
         return image_array
 
     def add_copenhagen_inset_from_image(
-        self, ax, image_array, position=(0.8, 0.7), size=0.1
+        self, ax, image_array, position=(0.8, 0.75), size=0.1, add_connectors=True
     ):
         """Add a Copenhagen inset map using an in-memory image with transparency.
 
@@ -915,6 +947,7 @@ class Visualizer:
             image_array: Numpy array of the Copenhagen map image
             position: (x, y) position in axis coordinates (0-1 range)
             size: Size of the inset as fraction of the figure
+            add_connectors: Whether to add connector lines to the masked area
         """
         try:
             # Create an OffsetImage with the desired size
@@ -940,7 +973,46 @@ class Visualizer:
 
             # Add the image to the plot
             ax.add_artist(ab)
-            self.logger.info("Added transparent Copenhagen inset with border")
+
+            # Add connector lines if requested
+            if add_connectors:
+                # Get the Copenhagen metropolitan area for the current year
+                metro_2005, metro_2009 = (
+                    self.data_analyzer.data_loader.get_copenhagen_metropolitan_area()
+                )
+                # Get the most recently used metro data
+                metro_data = (
+                    metro_2005
+                    if hasattr(ax, "year") and ax.year == 2005
+                    else metro_2009
+                )
+                metro_data_web = self.prepare_spatial_data_for_mapping(metro_data)
+
+                # Dissolve to get a single polygon if needed
+                if len(metro_data_web) > 1:
+                    metro_dissolved = metro_data_web.copy()
+                    metro_dissolved["dissolve_key"] = 1
+                    metro_mask = metro_dissolved.dissolve(by="dissolve_key")
+                else:
+                    metro_mask = metro_data_web
+
+                # Add the connector lines with specific target points
+                self.add_inset_connectors(
+                    ax,
+                    metro_mask.geometry,
+                    source_points=[
+                        (0.611, 0.43),
+                        (0.625, 0.34),
+                    ],
+                    target_points=[
+                        (0.633, 0.535),
+                        (0.9675, 0.535),
+                    ],
+                )
+
+            self.logger.info(
+                "Added transparent Copenhagen inset with border and connectors"
+            )
 
         except Exception as e:
             self.logger.error(f"Failed to add Copenhagen inset: {e}")
@@ -962,6 +1034,7 @@ class Visualizer:
         use_fixed_color=None,
         format_func=None,
         adjust_text_args=None,
+        exclude_geometries=None,
     ):
         """Add centroid labels to municipalities on a map with optimized placement.
 
@@ -981,6 +1054,7 @@ class Visualizer:
             use_fixed_color: If provided, use this color for all labels
             format_func: Custom function to format label text and determine color
             adjust_text_args: Dictionary of arguments to pass to adjust_text
+            exclude_geometries: Optional GeoDataFrame with geometries to exclude from labeling
         """
         self.logger.info(f"Adding centroid labels for {len(gdf)} municipalities")
 
@@ -992,6 +1066,20 @@ class Visualizer:
             if pd.notna(row[value_column]):
                 # Get the centroid of the municipality
                 centroid = row.geometry.centroid
+
+                # Skip if this centroid falls within any of the exclusion geometries
+                if exclude_geometries is not None:
+                    # Check if the centroid is within any of the exclusion geometries
+                    point_in_exclusion = False
+                    for _, excl_row in exclude_geometries.iterrows():
+                        if excl_row.geometry.contains(centroid):
+                            point_in_exclusion = True
+                            break
+
+                    # Skip this label if the point is in an exclusion zone
+                    if point_in_exclusion:
+                        continue
+
                 value = row[value_column]
 
                 # Determine the label text and color based on the data type and provided options
@@ -1047,8 +1135,13 @@ class Visualizer:
                 "force_points": 0.1,  # Lower force from points
                 "force_text": 0.5,  # Higher force between texts
                 "lim": 500,  # More iterations for better placement
-                "only_move": {"text": "xy"},  # Only move the text, not the points
-                "arrowprops": dict(arrowstyle="-", color="gray", alpha=0.4, lw=0.5),
+                "only_move": {
+                    "points": "xy",
+                    "text": "xy",
+                },  # Allow movement of both points and text
+                "arrowprops": dict(
+                    arrowstyle="->", color="gray", alpha=1, lw=0.8
+                ),  # Use arrow style
                 "avoid_self": True,  # Avoid overlaps between texts
             }
 
@@ -1058,6 +1151,50 @@ class Visualizer:
 
             # Run the adjustText algorithm
             adjust_text(texts, **default_adjust_params)
+
+    def mask_copenhagen_area(self, ax, year):
+        """Mask out the Copenhagen area in the main map by overlaying a semi-transparent grey polygon.
+
+        Args:
+            ax: The matplotlib axis to add the mask to
+            year: The election year (2005 or 2009)
+        """
+        self.logger.info("Masking Copenhagen metropolitan area in main map")
+
+        # Store the year on the axis for reference when adding connectors
+        ax.year = year
+
+        # Get the Copenhagen metropolitan area data
+        metro_2005, metro_2009 = (
+            self.data_analyzer.data_loader.get_copenhagen_metropolitan_area()
+        )
+        metro_data = metro_2005 if year == 2005 else metro_2009
+
+        # Ensure the data is in the correct projection
+        metro_data_web = self.prepare_spatial_data_for_mapping(metro_data)
+
+        # Dissolve all the municipalities into a single polygon if more than one
+        if len(metro_data_web) > 1:
+            # Create a copy to avoid modifying the original
+            metro_dissolved = metro_data_web.copy()
+            # Add a constant column to dissolve by
+            metro_dissolved["dissolve_key"] = 1
+            # Dissolve to get a single polygon
+            metro_mask = metro_dissolved.dissolve(by="dissolve_key")
+        else:
+            metro_mask = metro_data_web
+
+        # Plot the mask with a semi-transparent grey fill and no border
+        metro_mask.plot(
+            ax=ax,
+            color="grey",
+            alpha=0.9,
+            edgecolor="white",
+            linewidth=0.5,
+            zorder=3,  # Place above the main map but below labels and other annotations
+        )
+
+        self.logger.info("Copenhagen area masked successfully")
 
     def create_all_visualizations(self) -> None:
         """Create all visualizations at once."""
@@ -1075,3 +1212,83 @@ class Visualizer:
         self.create_merged_status_map()
 
         self.logger.info("All visualizations created successfully")
+
+    def add_inset_connectors(
+        self,
+        ax,
+        mask_geometry,
+        source_points=None,
+        target_points=None,
+        line_style="--",
+        line_color="black",
+        alpha=0.5,
+        linewidth=0.8,
+    ):
+        """Add connector lines between the masked area and the inset map.
+
+        Args:
+            ax: The matplotlib axis
+            mask_geometry: The geometry of the masked area
+            source_points: List of (x,y) tuples for source points, or None to use mask bounds
+            target_points: List of (x,y) tuples for target points on the inset
+            line_style: Style of the connector lines
+            line_color: Color of the connector lines
+            alpha: Transparency of the lines
+            linewidth: Width of the lines
+        """
+        # Get the bounding box of the mask geometry
+        bounds = mask_geometry.bounds
+        if len(bounds) == 0:
+            return
+
+        # For multi-geometry masks, use the first one's bounds
+        if isinstance(bounds, pd.DataFrame):
+            minx, miny, maxx, maxy = bounds.iloc[0]
+        else:
+            minx, miny, maxx, maxy = bounds
+
+        # If source points not provided, use default points from the mask bounds
+        if source_points is None:
+            source_points = [(maxx, maxy), (maxx, miny)]  # top-right, bottom-right
+
+        # If target points not provided, raise an error
+        if target_points is None:
+            raise ValueError("Target points must be provided for inset connectors")
+
+        # Ensure we have the same number of source and target points
+        if len(source_points) != len(target_points):
+            raise ValueError("Number of source and target points must match")
+
+        # Draw connector lines between each pair of source and target points
+        for i, ((src_x, src_y), (tgt_x, tgt_y)) in enumerate(
+            zip(source_points, target_points)
+        ):
+            # Convert source point from axes fraction to data coordinates if needed
+            if (
+                isinstance(src_x, float)
+                and 0 <= src_x <= 1
+                and isinstance(src_y, float)
+                and 0 <= src_y <= 1
+            ):
+                x_data, y_data = ax.transAxes.transform((src_x, src_y))
+                src_x, src_y = ax.transData.inverted().transform((x_data, y_data))
+
+            # Convert target point from axes fraction to data coordinates if needed
+            if (
+                isinstance(tgt_x, float)
+                and 0 <= tgt_x <= 1
+                and isinstance(tgt_y, float)
+                and 0 <= tgt_y <= 1
+            ):
+                x_data, y_data = ax.transAxes.transform((tgt_x, tgt_y))
+                tgt_x, tgt_y = ax.transData.inverted().transform((x_data, y_data))
+
+            ax.plot(
+                [src_x, tgt_x],
+                [src_y, tgt_y],
+                linestyle=line_style,
+                color=line_color,
+                alpha=alpha,
+                linewidth=linewidth,
+                zorder=9,
+            )

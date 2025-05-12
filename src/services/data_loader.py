@@ -55,6 +55,9 @@ class DataLoader:
             # Load the shapefile using geopandas with pyogrio engine
             gdf = gpd.read_file(shapefile_path, engine="pyogrio")
 
+            # Log the original CRS from the shapefile
+            self.logger.info(f"Original CRS from shapefile: {gdf.crs}")
+
             # Fix encoding issues in shapeName column
             if "shapeName" in gdf.columns:
                 # Create a mapping for known encoding issues
