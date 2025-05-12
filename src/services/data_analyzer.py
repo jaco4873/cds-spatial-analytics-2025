@@ -354,8 +354,6 @@ class DataAnalyzer:
         Returns:
             Dict: Comparison results showing differential effects by municipality type
         """
-        # Note: We'll use the merged flag from our 2005 data to identify merged municipalities
-        # since we added this information in the scraper
 
         # Load data if not already loaded
         if self.election_2005_df is None or self.election_2009_df is None:
@@ -457,3 +455,108 @@ class DataAnalyzer:
         }
 
         return report
+
+    def calculate_representation_density(
+        self, spatial_data: gpd.GeoDataFrame, year: int
+    ) -> gpd.GeoDataFrame:
+        """Calculate representation density (citizens per councilor) for any spatial dataset.
+
+        Args:
+            spatial_data: GeoDataFrame containing municipality data
+            year: Election year (2005 or 2009)
+
+        Returns:
+            GeoDataFrame with density column added
+        """
+        # Create a copy to avoid modifying the original
+        result_data = spatial_data.copy()
+
+        # Calculate representation density
+        total_councilors = (
+            self.TOTAL_COUNCILORS_2005 if year == 2005 else self.TOTAL_COUNCILORS_2009
+        )
+        municipality_count = (
+            len(self.election_2005_df) if year == 2005 else len(self.election_2009_df)
+        )
+
+        # Calculate density as eligible voters per average councilor count
+        result_data["density"] = result_data["stemmeberettigede_election"] / (
+            total_councilors / municipality_count
+        )
+
+        self.logger.info(
+            f"Calculated representation density for {len(result_data)} municipalities"
+        )
+        return result_data
+
+    def calculate_turnout_change(
+        self, data_2005: gpd.GeoDataFrame, data_2009: gpd.GeoDataFrame
+    ) -> gpd.GeoDataFrame:
+        """Calculate turnout change between 2005 and 2009 for any pair of spatial datasets.
+
+        Args:
+            data_2005: GeoDataFrame with 2005 election data
+            data_2009: GeoDataFrame with 2009 election data
+
+        Returns:
+            GeoDataFrame with turnout_change column
+        """
+        # Find common municipalities between the datasets
+        common_names = set(data_2005["shapeName"]).intersection(
+            set(data_2009["shapeName"])
+        )
+
+        # Filter to common municipalities with valid data
+        data_2005_common = data_2005[data_2005["shapeName"].isin(common_names)]
+        data_2009_common = data_2009[data_2009["shapeName"].isin(common_names)]
+
+        data_2005_common = data_2005_common[
+            data_2005_common["stemmeprocent_election"].notna()
+        ]
+        data_2009_common = data_2009_common[
+            data_2009_common["stemmeprocent_election"].notna()
+        ]
+
+        # Merge data for comparison
+        comparison = pd.merge(
+            data_2005_common[["shapeName", "stemmeprocent_election", "geometry"]],
+            data_2009_common[["shapeName", "stemmeprocent_election"]],
+            on="shapeName",
+            suffixes=("_2005", "_2009"),
+        )
+
+        # Calculate turnout change
+        comparison["turnout_change"] = (
+            comparison["stemmeprocent_election_2009"]
+            - comparison["stemmeprocent_election_2005"]
+        )
+
+        # Convert to GeoDataFrame
+        comparison_gdf = gpd.GeoDataFrame(
+            comparison, geometry="geometry", crs=data_2005.crs
+        )
+
+        self.logger.info(
+            f"Calculated turnout change for {len(comparison_gdf)} municipalities"
+        )
+        return comparison_gdf
+
+    def prepare_copenhagen_turnout_change_data(self) -> gpd.GeoDataFrame:
+        """Prepare turnout change data specifically for the Copenhagen metropolitan area."""
+        # Get Copenhagen metropolitan data
+        metro_2005, metro_2009 = self.data_loader.get_copenhagen_metropolitan_area()
+
+        # Ensure data is in correct projection
+        metro_2005_web = (
+            metro_2005.to_crs("EPSG:25832")
+            if metro_2005.crs is None or metro_2005.crs.to_string() != "EPSG:25832"
+            else metro_2005
+        )
+        metro_2009_web = (
+            metro_2009.to_crs("EPSG:25832")
+            if metro_2009.crs is None or metro_2009.crs.to_string() != "EPSG:25832"
+            else metro_2009
+        )
+
+        # Use the common calculation method
+        return self.calculate_turnout_change(metro_2005_web, metro_2009_web)

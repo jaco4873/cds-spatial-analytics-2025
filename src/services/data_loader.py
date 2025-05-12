@@ -216,3 +216,74 @@ class DataLoader:
         )
 
         return merged_2005, merged_2009
+
+    def get_copenhagen_metropolitan_area(
+        self,
+    ) -> tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
+        """Extract municipalities in the Copenhagen metropolitan area from prepared spatial data.
+
+        Returns:
+            tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]: GeoDataFrames for 2005 and 2009 containing
+            only municipalities in the Copenhagen metropolitan area
+        """
+        # Get the full spatial data
+        merged_2005, merged_2009 = self.prepare_spatial_data()
+
+        # Define municipalities in the Copenhagen metropolitan area
+        copenhagen_municipalities = [
+            "København",
+            "Frederiksberg",
+            "Dragør",
+            "Tårnby",
+            "Albertslund",
+            "Ballerup",
+            "Brøndby",
+            "Gentofte",
+            "Gladsaxe",
+            "Glostrup",
+            "Herlev",
+            "Hvidovre",
+            "Høje-Tåstrup",
+            "Ishøj",
+            "Lyngby-Tårbæk",
+            "Rødovre",
+            "Vallensbæk",
+            "Furesø",
+            "Allerød",
+            "Rudersdal",
+            "Egedal",
+            "Hørsholm",
+        ]
+
+        self.logger.info(
+            f"Filtering for {len(copenhagen_municipalities)} municipalities in Copenhagen metropolitan area"
+        )
+
+        # Filter the data to only include Copenhagen metropolitan area
+        metro_2005 = merged_2005[
+            merged_2005["name_election"].isin(copenhagen_municipalities)
+        ]
+        metro_2009 = merged_2009[
+            merged_2009["name_election"].isin(copenhagen_municipalities)
+        ]
+
+        # Log the number of municipalities found
+        self.logger.info(
+            f"Found {len(metro_2005)} Copenhagen metro municipalities in 2005 data"
+        )
+        self.logger.info(
+            f"Found {len(metro_2009)} Copenhagen metro municipalities in 2009 data"
+        )
+
+        # Log any missing municipalities
+        if len(metro_2005) < len(copenhagen_municipalities):
+            found = set(metro_2005["name_election"].dropna().unique())
+            missing = set(copenhagen_municipalities) - found
+            self.logger.warning(f"Missing municipalities in 2005 data: {missing}")
+
+        if len(metro_2009) < len(copenhagen_municipalities):
+            found = set(metro_2009["name_election"].dropna().unique())
+            missing = set(copenhagen_municipalities) - found
+            self.logger.warning(f"Missing municipalities in 2009 data: {missing}")
+
+        return metro_2005, metro_2009
