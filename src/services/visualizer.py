@@ -11,6 +11,7 @@ from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 from services.data_analyzer import DataAnalyzer
 import geopandas as gpd
 import random
+from adjustText import adjust_text
 
 
 class Visualizer:
@@ -705,7 +706,7 @@ class Visualizer:
             how="left",
         )
 
-        # Add centroid labels with turnout change values using the enhanced method
+        # Add centroid labels with turnout change values using adjustText
         self.add_centroid_labels(
             ax=ax,
             gdf=merged_data,
@@ -716,8 +717,12 @@ class Visualizer:
             negative_color="darkred",
             show_sign=True,
             alpha=0.7,
-            pad=1,
-            jitter=False,
+            pad=0.5,
+            adjust_text_args={
+                "force_points": 0.2,
+                "force_text": 0.8,
+                "expand_points": (1.5, 1.5),
+            },
         )
 
         # Create and add Copenhagen inset with both merger status coloring and turnout change labels
@@ -735,6 +740,11 @@ class Visualizer:
                 "positive_color": "darkgreen",
                 "negative_color": "darkred",
                 "show_sign": True,
+                "adjust_text_args": {
+                    "expand_points": (2.0, 2.0),
+                    "force_text": 0.8,
+                    "arrowprops": dict(arrowstyle="-", color="gray", alpha=0.6, lw=0.7),
+                },
             },
         )
 
@@ -951,12 +961,9 @@ class Visualizer:
         category_colors=None,
         use_fixed_color=None,
         format_func=None,
-        jitter=True,
-        jitter_seed=42,
-        jitter_max_attempts=100,
-        jitter_radius=None,
+        adjust_text_args=None,
     ):
-        """Add centroid labels to municipalities on a map.
+        """Add centroid labels to municipalities on a map with optimized placement.
 
         Args:
             ax: Matplotlib axis to add labels to
@@ -973,24 +980,12 @@ class Visualizer:
             category_colors: Dictionary mapping category values to colors
             use_fixed_color: If provided, use this color for all labels
             format_func: Custom function to format label text and determine color
-            jitter: Whether to apply jittering to avoid label overlap
-            jitter_seed: Random seed for reproducible jittering
-            jitter_max_attempts: Maximum attempts to find non-overlapping position
-            jitter_radius: Maximum jittering radius in map units (if None, auto-calculated)
+            adjust_text_args: Dictionary of arguments to pass to adjust_text
         """
         self.logger.info(f"Adding centroid labels for {len(gdf)} municipalities")
 
-        # Set random seed for reproducible jittering
-        random.seed(jitter_seed)
-
-        # Store text objects and their bounding boxes for collision detection
-        placed_texts = []
-
-        # Calculate a default jitter radius if not provided (as % of map width)
-        if jitter and jitter_radius is None:
-            bounds = gdf.total_bounds  # Get the bounds of the entire dataset
-            map_width = bounds[2] - bounds[0]
-            jitter_radius = map_width * 0.03  # 3% of map width as default radius
+        # Store all text objects for adjustText
+        texts = []
 
         # Add centroid labels with values
         for _, row in gdf.iterrows():
@@ -1023,75 +1018,10 @@ class Visualizer:
                 if use_fixed_color:
                     color = use_fixed_color
 
-                # Apply jittering to avoid overlaps if enabled
-                x, y = centroid.x, centroid.y
-
-                if jitter and placed_texts:
-                    # Start with the centroid position
-                    best_position = (x, y)
-                    lowest_overlap = float("inf")
-
-                    # Try different positions to minimize overlap
-                    for attempt in range(jitter_max_attempts):
-                        # Generate a random position within the jitter radius
-                        angle = random.uniform(0, 2 * 3.14159)  # Random angle
-                        distance = random.uniform(0, jitter_radius)  # Random distance
-                        test_x = x + distance * np.cos(angle)
-                        test_y = y + distance * np.sin(angle)
-
-                        # Create a test text to check for overlap
-                        test_text = ax.text(
-                            test_x,
-                            test_y,
-                            label,
-                            fontsize=fontsize,
-                            ha="center",
-                            va="center",
-                        )
-
-                        # Get the bounding box
-                        test_bbox = test_text.get_window_extent(
-                            renderer=ax.figure.canvas.get_renderer()
-                        )
-
-                        # Calculate overlap with existing texts
-                        overlap = 0
-                        for placed_text, _ in placed_texts:
-                            placed_bbox = placed_text.get_window_extent(
-                                renderer=ax.figure.canvas.get_renderer()
-                            )
-                            # Check if bounding boxes intersect
-                            if test_bbox.overlaps(placed_bbox):
-                                # Calculate the overlap area
-                                overlap_width = min(test_bbox.x1, placed_bbox.x1) - max(
-                                    test_bbox.x0, placed_bbox.x0
-                                )
-                                overlap_height = min(
-                                    test_bbox.y1, placed_bbox.y1
-                                ) - max(test_bbox.y0, placed_bbox.y0)
-                                overlap += max(0, overlap_width) * max(
-                                    0, overlap_height
-                                )
-
-                        # Remove the test text
-                        test_text.remove()
-
-                        # If this position has less overlap, use it
-                        if overlap < lowest_overlap:
-                            lowest_overlap = overlap
-                            best_position = (test_x, test_y)
-
-                        # If we found a position with no overlap, stop early
-                        if lowest_overlap == 0:
-                            break
-
-                    # Use the best position found
-                    x, y = best_position
-
-                # Add text annotation with the value at the (possibly jittered) position
+                # Add text annotation at the centroid position
                 text = ax.text(
-                    x,
-                    y,
+                    centroid.x,
+                    centroid.y,
                     label,
                     fontsize=fontsize,
                     ha="center",
@@ -1101,11 +1031,33 @@ class Visualizer:
                     bbox=dict(
                         facecolor=color, alpha=alpha, pad=pad, boxstyle="round,pad=0.1"
                     ),
+                    zorder=5,  # Set labels above map
                 )
 
-                # Store the text and its properties for future collision detection
-                if jitter:
-                    placed_texts.append((text, (x, y)))
+                # Collect text objects for adjustText
+                texts.append(text)
+
+        # Apply adjustText to optimize label placement
+        if texts:
+            self.logger.info("Applying adjustText to optimize label placement")
+
+            # Default parameters for adjustText
+            default_adjust_params = {
+                "expand_points": (1.5, 1.5),
+                "force_points": 0.1,  # Lower force from points
+                "force_text": 0.5,  # Higher force between texts
+                "lim": 500,  # More iterations for better placement
+                "only_move": {"text": "xy"},  # Only move the text, not the points
+                "arrowprops": dict(arrowstyle="-", color="gray", alpha=0.4, lw=0.5),
+                "avoid_self": True,  # Avoid overlaps between texts
+            }
+
+            # Update with user-provided parameters if any
+            if adjust_text_args:
+                default_adjust_params.update(adjust_text_args)
+
+            # Run the adjustText algorithm
+            adjust_text(texts, **default_adjust_params)
 
     def create_all_visualizations(self) -> None:
         """Create all visualizations at once."""
