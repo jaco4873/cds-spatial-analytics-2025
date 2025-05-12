@@ -548,13 +548,13 @@ class DataAnalyzer:
 
         # Ensure data is in correct projection
         metro_2005_web = (
-            metro_2005.to_crs("EPSG:25832")
-            if metro_2005.crs is None or metro_2005.crs.to_string() != "EPSG:25832"
+            metro_2005.to_crs("EPSG:32632")
+            if metro_2005.crs is None or metro_2005.crs.to_string() != "EPSG:32632"
             else metro_2005
         )
         metro_2009_web = (
-            metro_2009.to_crs("EPSG:25832")
-            if metro_2009.crs is None or metro_2009.crs.to_string() != "EPSG:25832"
+            metro_2009.to_crs("EPSG:32632")
+            if metro_2009.crs is None or metro_2009.crs.to_string() != "EPSG:32632"
             else metro_2009
         )
 

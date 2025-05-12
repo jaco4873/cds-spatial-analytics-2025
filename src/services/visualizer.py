@@ -133,12 +133,12 @@ class Visualizer:
             spatial_data: GeoDataFrame to prepare
 
         Returns:
-            GeoDataFrame in UTM Zone 32N projection (EPSG:25832)
+            GeoDataFrame in UTM Zone 32N projection (EPSG:32632)
         """
-        # Ensure data is in UTM Zone 32N (EPSG:25832) - appropriate for Denmark
-        if spatial_data.crs is None or spatial_data.crs.to_string() != "EPSG:25832":
-            self.logger.info("Converting spatial data to EPSG:25832 (UTM Zone 32N)")
-            spatial_data = spatial_data.to_crs("EPSG:25832")
+        # Ensure data is in UTM Zone 32N (EPSG:32632) - appropriate for Denmark
+        if spatial_data.crs is None or spatial_data.crs.to_string() != "EPSG:32632":
+            self.logger.info("Converting spatial data to EPSG:32632 (UTM Zone 32N)")
+            spatial_data = spatial_data.to_crs("EPSG:32632")
 
         # Return data in UTM coordinates (better for scale accuracy)
         return spatial_data
@@ -147,7 +147,7 @@ class Visualizer:
         """Add a basemap to the given axis.
 
         Args:
-            ax: Matplotlib axis with data in EPSG:25832 projection
+            ax: Matplotlib axis with data in EPSG:32632 projection
         """
         try:
             # Specify the CRS when adding the basemap
@@ -157,7 +157,7 @@ class Visualizer:
                 zoom="auto",
                 alpha=0.4,
                 attribution=False,
-                crs="EPSG:25832",  # Specify that our data is in UTM Zone 32N
+                crs="EPSG:32632",  # Specify that our data is in UTM Zone 32N
             )
 
             self.tile_attribution = "Map tiles: © CartoDB"
