@@ -172,9 +172,20 @@ class Visualizer:
         Args:
             year: The election year (2005 or 2009)
         """
-        # Prepare spatial data
+        # Prepare spatial data for both years to calculate a consistent scale
         spatial_2005, spatial_2009 = self.data_analyzer.prepare_spatial_data()
 
+        # Calculate global min and max for consistent coloring across both years
+        global_min = min(
+            spatial_2005["stemmeprocent_election"].min(),
+            spatial_2009["stemmeprocent_election"].min(),
+        )
+        global_max = max(
+            spatial_2005["stemmeprocent_election"].max(),
+            spatial_2009["stemmeprocent_election"].max(),
+        )
+
+        # Select the data for the requested year
         if year == 2005:
             spatial_data = spatial_2005
         elif year == 2009:
@@ -189,9 +200,9 @@ class Visualizer:
         fig, ax = plt.subplots(1, 1, figsize=(10, 12), dpi=300)
         fig.subplots_adjust(top=0.99)  # Move subplot closer to top
 
-        # Get data range for consistent coloring
-        vmin = spatial_data_web["stemmeprocent_election"].min()
-        vmax = spatial_data_web["stemmeprocent_election"].max()
+        # Use global min/max for consistent coloring across years
+        vmin = global_min
+        vmax = global_max
 
         # Plot the data
         spatial_data_web.plot(
