@@ -4,14 +4,14 @@
     "municipalities_after_reform": 98,
     "reduction_percentage": 0.0,
     "total_councilors_before": 4597,
-    "total_councilors_after": 2520,
-    "councilors_reduction_percentage": 45.181640200130516,
+    "total_councilors_after": 2468,
+    "councilors_reduction_percentage": 46.312812703937354,
     "overall_turnout_before": 69.46152541762493,
     "overall_turnout_after": 65.8152931134951,
     "overall_turnout_change": -3.646232304129825,
     "representation_density_before": 912.1028931912117,
-    "representation_density_after": 1699.7587301587303,
-    "representation_density_increase_percentage": 86.35602878220404
+    "representation_density_after": 1735.5721231766613,
+    "representation_density_increase_percentage": 90.28249292186149
   },
   "voter_turnout": {
     "overall_turnout": {
@@ -711,21 +711,21 @@
   "representation_density": {
     "total_councilors": {
       "2005": 4597,
-      "2009": 2520,
-      "change": -2077,
-      "percent_change": -45.181640200130516
+      "2009": 2468,
+      "change": -2129,
+      "percent_change": -46.312812703937354
     },
     "overall_density": {
       "2005": 912.1028931912117,
-      "2009": 1699.7587301587303,
-      "change": 787.6558369675186,
-      "percent_change": 86.35602878220404
+      "2009": 1735.5721231766613,
+      "change": 823.4692299854496,
+      "percent_change": 90.28249292186149
     },
     "avg_municipal_density": {
       "2005": 912.1028931912117,
-      "2009": 1699.7587301587305,
-      "change": 787.6558369675188,
-      "percent_change": 86.35602878220406
+      "2009": 1735.572123176661,
+      "change": 823.4692299854494,
+      "percent_change": 90.28249292186146
     },
     "municipalities_count": {
       "2005": 271,

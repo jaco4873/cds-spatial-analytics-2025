@@ -11,12 +11,9 @@ from pathlib import Path
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler(), logging.FileHandler("kmdvalg_scraper.log")],
+    handlers=[logging.StreamHandler(), logging.FileHandler("scraper_2001.log")],
 )
 logger = logging.getLogger(__name__)
-
-
-# ===== UTILITY FUNCTIONS =====
 
 
 def fetch_html(url) -> str:
@@ -166,45 +163,9 @@ def extract_counselor_count(html_content, base_directory):
     return None
 
 
-def extract_kommune_name_from_page(html_content):
-    """
-    Extract the kommune name directly from the kommune page HTML
-    where encoding is properly handled.
-
-    Args:
-        html_content: HTML content of kommune page
-
-    Returns:
-        str: Properly encoded kommune name
-    """
-    if not html_content:
-        return None
-
-    soup = BeautifulSoup(html_content, "html.parser")
-
-    # Strategy 1: Check the title first
-    title = soup.find("title")
-    if title:
-        title_text = title.get_text().strip()
-        # Case-insensitive search for "kommune"
-        if "kommune" in title_text.lower():
-            # Extract kommune name from title (e.g., "Kommunalvalg Ærø kommune" → "Ærø")
-            parts = title_text.split()
-            for i, part in enumerate(parts):
-                if "kommune" in part.lower() and i > 0:
-                    return f"{parts[i - 1]}"
-    else:
-        logger.warning("No title found in the HTML content")
-
-    return None
-
-
-# ===== 2001-SPECIFIC FUNCTIONS =====
-
-
 def extract_area_tags(html_content, base_url):
     """
-    Extract all AREA tags from an amt page (2001-specific)
+    Extract all AREA tags from an amt page
 
     Args:
         html_content: HTML content of the amt page
@@ -241,9 +202,9 @@ def extract_area_tags(html_content, base_url):
     return kommune_data
 
 
-def fetch_main_page_2001(year):
+def fetch_main_page(year):
     """
-    Fetch the main election page for 2001
+    Fetch the main election page for a specific year
 
     Args:
         year: Election year
@@ -266,7 +227,7 @@ def fetch_main_page_2001(year):
 
 def extract_amt_links(html_content, base_url):
     """
-    Extract all amt links from the main page (2001-specific)
+    Extract all amt links from the main page
 
     Args:
         html_content: HTML content of the main page
@@ -305,7 +266,7 @@ def extract_amt_links(html_content, base_url):
 
 def fetch_all_amt_pages(amt_links, year):
     """
-    Fetch all amt pages and extract kommune links (2001-specific)
+    Fetch all amt pages and extract kommune links
 
     Args:
         amt_links: List of amt links
@@ -345,9 +306,9 @@ def fetch_all_amt_pages(amt_links, year):
     return all_kommuner
 
 
-def process_kommune_2001(kommune_data, year, stats_counter):
+def process_kommune(kommune_data, year, stats_counter):
     """
-    Process a kommune by fetching its page and extracting data (2001-specific)
+    Process a kommune by fetching its page and extracting data
 
     Args:
         kommune_data: Dictionary with kommune information
@@ -413,250 +374,22 @@ def process_kommune_2001(kommune_data, year, stats_counter):
     return enhanced_data
 
 
-# ===== 2005/2009-SPECIFIC FUNCTIONS =====
-
-
-def extract_kommune_links(html_content, base_url):
-    """
-    Extract kommune information from HTML content with recursive handling of nested pages.
-    Used for 2005/2009 structure.
-    """
-    if not html_content:
-        return []
-
-    soup = BeautifulSoup(html_content, "html.parser")
-    kommune_data = []
-
-    for area in soup.find_all("area"):
-        name = area.get("alt", "")
-        href = area.get("href", "")
-
-        if not href or not name:
-            continue
-
-        # Check if this Hovedstadens kommuner
-        if name == "Hovedstadens kommuner" or (href and href.endswith("h.htm")):
-            logger.info(
-                f"Found container page: {name}, fetching nested kommuner from {href}"
-            )
-
-            # Construct full URL for the nested page
-            nested_url = urljoin(base_url, href)
-
-            # Fetch and parse the nested page
-            nested_html = fetch_html(nested_url)
-            if nested_html:
-                # Extract kommuner from nested page and add them
-                nested_kommuner = extract_kommune_links(nested_html, nested_url)
-                kommune_data.extend(nested_kommuner)
-                logger.info(f"Added {len(nested_kommuner)} nested kommuner from {name}")
-            else:
-                logger.warning(f"Failed to fetch nested page: {nested_url}")
-        else:
-            # Regular kommune, add it to the list
-            kommune_data.append(
-                {
-                    "name": name.strip(),
-                    "href": href.strip(),
-                }
-            )
-
-    return kommune_data
-
-
-def check_merged_kommune(html_content):
-    """
-    Check if a kommune is a merged kommune (2005/2009-specific)
-
-    Args:
-        html_content: HTML content of kommune page
-
-    Returns:
-        tuple: (is_merged, list of merged municipalities)
-    """
-    if not html_content:
-        return False, []
-
-    soup = BeautifulSoup(html_content, "html.parser")
-    merged = False
-    merged_municipalities = []
-
-    # Check if this is a merged kommune by looking for "Kommuner" heading
-    font_headers = soup.find_all("font", attrs={"color": "#FFFFFF"})
-    for header in font_headers:
-        bold_tags = header.find_all("b")
-        for bold in bold_tags:
-            if bold.get_text().strip() == "Kommuner":
-                merged = True
-
-                # Find the table containing municipality links
-                table = bold.find_parent("table")
-                if table:
-                    # Find the row with kommune links
-                    link_row = table.find("td", attrs={"bgcolor": "#CCCCCC"})
-                    if link_row:
-                        # Extract all kommune links
-                        for link in link_row.find_all("a"):
-                            kommune_name = link.get_text().strip()
-                            if kommune_name:
-                                merged_municipalities.append(kommune_name)
-
-    # Check for "Afstemningsområder" (voting areas) which confirms it's not merged
-    if not merged:
-        for header in font_headers:
-            bold_tags = header.find_all("b")
-            for bold in bold_tags:
-                if "Afstemningsområder" in bold.get_text().strip():
-                    merged = False
-
-    return merged, merged_municipalities
-
-
-def scrape_all_kommuner(kommune_df, base_url, year):
-    """
-    Scrape voting data for all kommuner in the DataFrame (2005/2009-specific)
-
-    Args:
-        kommune_df: DataFrame with kommune names and hrefs
-        base_url: Base URL for constructing full kommune URLs
-        year: Election year
-
-    Returns:
-        DataFrame: Enhanced DataFrame with voting statistics
-    """
-    # Calculate base directory from the URL
-    base_directory = "/".join(base_url.split("/")[:-1]) + "/"
-
-    # Create columns for the statistics
-    kommune_df["stemmeberettigede"] = None
-    kommune_df["stemmeprocent"] = None
-    kommune_df["optalte_stemmer"] = None
-    kommune_df["counselor_count"] = None  # New column for counselor count
-    kommune_df["year"] = year  # Add year column
-
-    # Add merge-related columns only for 2005+
-    if year >= 2005:
-        kommune_df["merged"] = None
-        kommune_df["merged_municipalities"] = None
-
-    # Process each kommune
-    for index, row in kommune_df.iterrows():
-        kommune_name = row["name"]
-        kommune_href = row["href"]
-
-        logger.info(
-            f"Processing {kommune_name} ({index + 1}/{len(kommune_df)}) for year {year}"
-        )
-
-        # Fetch the kommune page
-        html_content = fetch_html(urljoin(base_directory, kommune_href))
-
-        if html_content:
-            # Extract statistics
-            stats = extract_kommune_stats(html_content)
-
-            # Check if name contains the placeholder character "ï¿½"
-            if "ï¿½" in kommune_name:
-                corrected_name = extract_kommune_name_from_page(html_content)
-                if corrected_name:
-                    logger.info(
-                        f"Corrected name from '{kommune_name}' to '{corrected_name}'"
-                    )
-                    kommune_df.at[index, "name"] = corrected_name
-
-            # Update the DataFrame with stats data
-            for key, value in stats.items():
-                kommune_df.at[index, key] = value
-
-            # Extract merger information for 2005+
-            if year >= 2005:
-                merged, merged_municipalities = check_merged_kommune(html_content)
-                kommune_df.at[index, "merged"] = merged
-                kommune_df.at[index, "merged_municipalities"] = merged_municipalities
-
-            # Extract counselor count
-            counselor_count = extract_counselor_count(html_content, base_directory)
-            if counselor_count:
-                kommune_df.at[index, "counselor_count"] = counselor_count
-
-    return kommune_df
-
-
-# ===== UNIFIED SCRAPING FUNCTIONS =====
-
-
-def scrape_election_year(year):
-    """
-    Scrape data for a specific election year
-
-    Args:
-        year: Election year to scrape
-
-    Returns:
-        DataFrame: DataFrame with kommune voting data
-    """
-    # Define output dir
-    output_dir = Path("data/kmdvalg")
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    # Define output file with year
-    output_file = f"{output_dir}/kommune_data_{year}.csv"
-
-    if year == 2001:
-        return scrape_election_year_2001(output_file)
-    else:
-        # 2005/2009 process
-        base_url = f"https://www.kmdvalg.dk/kv/{year}/adk.htm"
-        logger.info(f"Starting scraper for election year {year}")
-
-        # Fetch kommune links from the website
-        logger.info(f"Fetching kommune links for {year} from website...")
-        html_content = fetch_html(base_url)
-
-        if not html_content:
-            logger.error(f"Failed to fetch HTML content for {year}")
-            return None
-
-        # Extract kommune data
-        kommune_data = extract_kommune_links(html_content, base_url)
-        df = pd.DataFrame(kommune_data)
-        df = df.drop_duplicates(subset=["name", "href"])
-        logger.info(f"Found {len(df)} kommune links for {year}")
-
-        # Scrape voting data for all kommuner
-        enhanced_df = scrape_all_kommuner(df, base_url, year)
-
-        # Apply hardcoded fixes for specific years
-        apply_hardcoded_fixes(enhanced_df, year)
-
-        # Fix encoding for Danish characters
-        fix_danish_encoding(enhanced_df)
-
-        # Calculate and log counselors
-        total_counselors = enhanced_df["counselor_count"].dropna().sum()
-        logger.info(
-            f"Total number of counselors for year {year}: {int(total_counselors)}"
-        )
-
-        # Save with UTF-8
-        enhanced_df.to_csv(output_file, index=False, encoding="utf-8")
-        logger.info(f"Saved enhanced DataFrame to {output_file}")
-
-        return enhanced_df
-
-
-def scrape_election_year_2001(output_file):
+def scrape_election_year_2001():
     """
     Scrape data for the 2001 election year
-
-    Args:
-        output_file: Path to save the output CSV
 
     Returns:
         DataFrame with kommune voting data
     """
     year = 2001
     logger.info(f"Starting scraper for election year {year}")
+
+    # Define output dir
+    output_dir = Path("data/kmdvalg")
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Define output file with year
+    output_file = f"{output_dir}/kommune_data_{year}.csv"
 
     # Initialize statistics counter
     stats_counter = {
@@ -670,7 +403,7 @@ def scrape_election_year_2001(output_file):
     }
 
     # Fetch main election page
-    main_html = fetch_main_page_2001(year)
+    main_html = fetch_main_page(year)
 
     if not main_html:
         logger.error(f"Failed to fetch main election page for {year}")
@@ -692,14 +425,19 @@ def scrape_election_year_2001(output_file):
 
     for i, kommune in enumerate(all_kommuner):
         logger.info(f"Processing kommune {i + 1}/{total_kommuner}: {kommune['name']}")
-        enhanced_kommune = process_kommune_2001(kommune, year, stats_counter)
+        enhanced_kommune = process_kommune(kommune, year, stats_counter)
         processed_kommuner.append(enhanced_kommune)
 
     # Convert to DataFrame
     df = pd.DataFrame(processed_kommuner)
 
     # Fix encoding for Danish characters
-    fix_danish_encoding(df)
+    for idx, row in df.iterrows():
+        if isinstance(row["name"], str):
+            # Ensure proper encoding of Danish characters
+            df.at[idx, "name"] = (
+                row["name"].encode("latin1", errors="replace").decode("latin1")
+            )
 
     # Calculate and log the sum of counselors for this year
     total_counselors = df["counselor_count"].dropna().sum()
@@ -712,49 +450,10 @@ def scrape_election_year_2001(output_file):
     df.to_csv(output_file, index=False, encoding="utf-8")
     logger.info(f"Saved DataFrame to {output_file}")
 
-    # Log statistics summary
-    log_statistics_summary(stats_counter, df)
+    # Display results
+    logger.info(f"\nCompleted scraping voting data for all kommuner in {year}")
+    logger.info(f"\n{df.head()}")
 
-    return df
-
-
-def fix_danish_encoding(df):
-    """Fix encoding for Danish characters in a DataFrame"""
-    for idx, row in df.iterrows():
-        if isinstance(row["name"], str):
-            # Ensure proper encoding of Danish characters
-            df.at[idx, "name"] = (
-                row["name"]
-                .replace("ï¿½", "ø")
-                .replace("ï¿½", "æ")
-                .replace("ï¿½", "å")
-                .encode("latin1", errors="replace")
-                .decode("latin1")
-            )
-
-
-def apply_hardcoded_fixes(df, year):
-    """Apply hardcoded fixes for specific situations"""
-    if year == 2005:
-        # Set counselor count for Læsø kommune (9 elected officials)
-        laeso_idx = df[df["name"].str.contains("Læsø", na=False, case=False)].index
-        if not laeso_idx.empty:
-            df.at[laeso_idx[0], "counselor_count"] = 9
-            logger.info(
-                "Hardcoded counselor count for Læsø kommune: 9 (source: statistikbanken.dk/VALGK3)"
-            )
-
-        # Set counselor count for Fanø kommune (11 elected officials)
-        fano_idx = df[df["name"].str.contains("Fanø", na=False, case=False)].index
-        if not fano_idx.empty:
-            df.at[fano_idx[0], "counselor_count"] = 11
-            logger.info(
-                "Hardcoded counselor count for Fanø kommune: 11 (source: statistikbanken.dk/VALGK3)"
-            )
-
-
-def log_statistics_summary(stats_counter, df):
-    """Log a summary of the scraping statistics"""
     # Show some statistics
     stats_columns = ["stemmeberettigede", "stemmeprocent", "optalte_stemmer"]
     missing_data = df[stats_columns].isna().sum()
@@ -766,16 +465,10 @@ def log_statistics_summary(stats_counter, df):
     # Log statistics summary
     logger.info("\n===== SCRAPING STATISTICS =====")
     logger.info(f"Total kommuner processed: {stats_counter['total_kommuner']}")
-
-    if stats_counter["total_kommuner"] > 0:
-        success_percentage = (
-            stats_counter["fully_successful"] / stats_counter["total_kommuner"] * 100
-        )
-        logger.info(
-            f"Fully successful extractions: {stats_counter['fully_successful']}/{stats_counter['total_kommuner']} "
-            + f"({success_percentage:.1f}%)"
-        )
-
+    logger.info(
+        f"Fully successful extractions: {stats_counter['fully_successful']}/{stats_counter['total_kommuner']} "
+        + f"({stats_counter['fully_successful'] / stats_counter['total_kommuner'] * 100:.1f}%)"
+    )
     logger.info(f"HTML fetch failures: {stats_counter['html_fetch_failures']}")
     logger.info(
         f"Missing stemmeberettigede: {stats_counter['missing_stemmeberettigede']}"
@@ -785,38 +478,12 @@ def log_statistics_summary(stats_counter, df):
     logger.info(f"Missing counselor_count: {stats_counter['missing_counselor_count']}")
     logger.info("==============================")
 
+    return df
+
 
 def main():
-    """Main function to scrape multiple election years and combine results"""
-    years = [2001, 2005, 2009]
-    all_data = []
-
-    for year in years:
-        year_df = scrape_election_year(year)
-        if year_df is not None:
-            all_data.append(year_df)
-
-    # Combine all data frames
-    if all_data:
-        combined_df = pd.concat(all_data, ignore_index=True)
-
-        # Fix encoding for Danish characters (final pass)
-        fix_danish_encoding(combined_df)
-
-        # Save the combined data
-        output_dir = Path("data/kmdvalg")
-        output_dir.mkdir(parents=True, exist_ok=True)
-        combined_output_file = f"{output_dir}/kommune_data_combined.csv"
-        combined_df.to_csv(combined_output_file, index=False, encoding="utf-8-sig")
-        logger.info(
-            f"Saved combined data with {len(combined_df)} records to {combined_output_file}"
-        )
-
-        # Print summary of combined data
-        logger.info("\n===== COMBINED DATA SUMMARY =====")
-        by_year = combined_df.groupby("year").size()
-        logger.info(f"Records by year:\n{by_year}")
-        logger.info("===============================")
+    """Main function to scrape 2001 election data and save it to CSV"""
+    scrape_election_year_2001()
 
 
 if __name__ == "__main__":

@@ -20,13 +20,9 @@ class DataAnalyzer:
         self.election_2009_df = None
         self.municipality_gdf = None
 
-        # Constants
-        self.MERGED_MUNICIPALITIES = 271 - 98  # 271 before, 98 after reform
-        self.UNCHANGED_MUNICIPALITIES = 30  # According to methodology
-
         # Councilor counts before and after reform
         self.TOTAL_COUNCILORS_2005 = 4597
-        self.TOTAL_COUNCILORS_2009 = 2520
+        self.TOTAL_COUNCILORS_2009 = 2468
 
     def load_data(self) -> None:
         """Load all necessary data for analysis."""
@@ -386,7 +382,6 @@ class DataAnalyzer:
         # Calculate average population sizes
         pop_unchanged_2005 = unchanged_2005["stemmeberettigede_election"].mean()
         pop_unchanged_2009 = unchanged_2009["stemmeberettigede_election"].mean()
-        pop_merged_2005 = merged_2005["stemmeberettigede_election"].mean()
 
         return {
             "unchanged_municipalities": {
