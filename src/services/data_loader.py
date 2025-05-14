@@ -28,14 +28,15 @@ class DataLoader:
         combined_df = pd.read_csv(combined_path, encoding="utf-8-sig")
 
         # Split by year
+        election_2001_df = combined_df[combined_df["year"] == 2001]
         election_2005_df = combined_df[combined_df["year"] == 2005]
         election_2009_df = combined_df[combined_df["year"] == 2009]
 
         self.logger.info(
-            f"Loaded {len(election_2005_df)} records for 2005 and {len(election_2009_df)} records for 2009"
+            f"Loaded {len(election_2001_df)} records for 2001, {len(election_2005_df)} records for 2005 and {len(election_2009_df)} records for 2009"
         )
 
-        return election_2005_df, election_2009_df
+        return election_2001_df, election_2005_df, election_2009_df
 
     def load_geographical_data(self):
         """Load Danish municipality boundary data from local shapefile.
@@ -121,7 +122,7 @@ class DataLoader:
             Tuple[GeoDataFrame, GeoDataFrame]: GeoDataFrames for 2005 and 2009 with electoral data
         """
         # Load data
-        election_2005, election_2009 = self.load_election_data()
+        election_2001, election_2005, election_2009 = self.load_election_data()
         geo_df = self.load_geographical_data()
 
         # Define mappings from 2005 names to 2009 names
