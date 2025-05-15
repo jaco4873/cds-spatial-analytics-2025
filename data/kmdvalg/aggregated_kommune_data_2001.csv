@@ -1,0 +1,99 @@
+post_merger_kommune,counselor_count,stemmeberettigede,optalte_stemmer,merged,merged_municipalities,stemmeprocent,year
+Aabenraa,85,45577,38877,True,"['Bov', 'Lundtoft', 'Rødekro', 'Tinglev', 'Aabenraa']",85.29960286986858,2001
+Aalborg,82,150753,126161,True,"['Hals', 'Nibe', 'Sejlflod', 'Aalborg']",83.68722347150637,2001
+Albertslund,21,21424,18208,False,[],84.98879761015684,2001
+Allerød,21,16898,15510,False,[],91.78601017871938,2001
+Assens,84,31080,27077,True,"['Assens', 'Glamsbjerg', 'Haarby', 'Tommerup', 'Vissenbjerg', 'Aarup']",87.12033462033462,2001
+Ballerup,25,35672,31147,False,[],87.31498093742992,2001
+Billund,32,19460,16829,True,"['Billund', 'Grindsted']",86.47995889003083,2001
+Bogense,47,21716,19214,True,"['Bogense', 'Otterup', 'Søndersø']",88.47854116780253,2001
+Bornholm,77,34429,29304,False,[],85.1142931830724,2001
+Brøndby,19,26317,21669,False,[],82.33841243302808,2001
+Brønderslev-Dronninglund,42,26934,23364,True,"['Brønderslev', 'Dronninglund']",86.74537758966362,2001
+Dragør,15,9997,9059,False,[],90.61718515554666,2001
+Egedal,45,28107,25598,True,"['Ledøje-Smørum', 'Stenløse', 'Ølstykke']",91.07339808588608,2001
+Esbjerg,63,87119,73805,True,"['Bramming', 'Esbjerg', 'Ribe']",84.71745543452059,2001
+Faaborg-Midtfyn,85,38772,34066,True,"['Broby', 'Faaborg', 'Ringe', 'Ryslinge', 'Årslev']",87.86237490972867,2001
+Fanø,11,2527,2239,False,[],88.6030866640285,2001
+Favrskov,64,29730,26669,True,"['Hadsten', 'Hammel', 'Hinnerup', 'Hvorslev']",89.70400269088464,2001
+Faxe,47,25770,22446,True,"['Haslev', 'Fakse', 'Rønnede']",87.10128055878928,2001
+Fredensborg,36,29274,25494,True,"['Fredensborg-Humlebæk', 'Karlebo']",87.08751793400286,2001
+Fredericia,21,37496,31631,False,[],84.35833155536591,2001
+Frederiksberg,25,76670,63308,False,[],82.5720620842572,2001
+Frederikshavn,59,50481,42106,True,"['Frederikshavn', 'Skagen', 'Sæby']",83.40959965135397,2001
+Frederikssund,56,32750,28957,True,"['Frederikssund', 'Jægerspris', 'Skibby', 'Slangerup']",88.41832061068702,2001
+Frederiksværk-Hundested,26,23427,19733,True,"['Frederiksværk', 'Hundested']",84.23186921073975,2001
+Furesø,34,27450,24704,True,"['Værløse', 'Farum']",89.99635701275047,2001
+Gentofte,17,52627,45161,False,[],85.81336576282138,2001
+Gladsaxe,25,47701,40719,False,[],85.36299029370453,2001
+Glostrup,17,16288,13971,False,[],85.77480353634577,2001
+Greve,21,36249,31787,False,[],87.6906949157218,2001
+Gribskov,36,30465,26782,True,"['Græsted-Gilleleje', 'Helsinge']",87.91071721647793,2001
+Guldborgsund,96,50766,43859,True,"['Nykøbing F', 'Nysted', 'Nørre Alslev', 'Sakskøbing', 'Stubbekøbing', 'Sydfalster']",86.3944372217626,2001
+Haderslev,55,40922,35433,True,"['Gram', 'Haderslev', 'Vojens']",86.5866770930062,2001
+Hedensted,57,32689,29181,True,"['Hedensted', 'Juelsminde', 'Tørring-Uldum']",89.26856128973048,2001
+Helsingør,25,46894,39262,False,[],83.72499680129654,2001
+Herlev,19,21081,17824,False,[],84.55006878231583,2001
+Herning,66,62223,54594,True,"['Aulum-Haderup', 'Herning', 'Trehøje', 'Aaskov']",87.73926040210212,2001
+Hillerød,32,32098,28255,True,"['Hillerød', 'Skævinge']",88.02729142002616,2001
+Hjørring,74,52072,43799,True,"['Hirtshals', 'Hjørring', 'Løkken-Vrå', 'Sindal']",84.11238285450914,2001
+Holbæk,77,49434,42491,True,"['Holbæk', 'Jernløse', 'Svinninge', 'Tornved', 'Tølløse']",85.95501072136587,2001
+Holstebro,53,42573,37214,True,"['Holstebro', 'Ulfborg-Vemb', 'Vinderup']",87.41220961642355,2001
+Horsens,55,58322,50217,True,"['Brædstrup', 'Gedved', 'Horsens']",86.10301429992113,2001
+Hvidovre,21,38392,32263,False,[],84.03573661179412,2001
+Høje-Tåstrup,21,34708,29442,False,[],84.82770542814336,2001
+Hørsholm,15,18668,16592,False,[],88.87936575958861,2001
+Ikast-Brande,49,29245,25427,True,"['Nørre-Snede', 'Brande', 'Ikast']",86.9447768849376,2001
+Ishøj,17,15306,12634,False,[],82.54279367568273,2001
+Jammerbugt,68,29467,25366,True,"['Brovst', 'Fjerritslev', 'Pandrup', 'Aabybro']",86.08273662062646,2001
+Kalundborg,81,36775,31527,True,"['Bjergsted', 'Gørlev', 'Hvidebæk', 'Høng', 'Kalundborg']",85.72943575798776,2001
+Kerteminde,43,17487,15560,True,"['Kerteminde', 'Langeskov', 'Munkebo']",88.98038542917595,2001
+Kolding,70,64695,55093,True,"['Christiansfeld', 'Kolding', 'Lunderskov', 'Vamdrup']",85.15804930829276,2001
+København,55,412673,313116,False,[],75.87508753904423,2001
+Køge,38,40523,35530,True,"['Køge', 'Skovbo']",87.6786022752511,2001
+Langeland,41,11665,9949,True,"['Rudkøbing', 'Sydlangeland', 'Tranekær']",85.28932704672097,2001
+Lejre,43,19207,17544,True,"['Bramsnæs', 'Hvalsø', 'Lejre']",91.34169833914719,2001
+Lemvig,34,17633,15217,True,"['Lemvig', 'Thyborøn-Harboøre']",86.29841773946578,2001
+Lolland,107,40302,34387,True,"['Holeby', 'Højreby', 'Maribo', 'Nakskov', 'Ravnsborg', 'Rudbjerg', 'Rødby']",85.32330901692224,2001
+Lyngby-Tårbæk,21,40534,34862,False,[],86.00680909853456,2001
+Læsø,9,1800,1546,False,[],85.88888888888889,2001
+Mariagerfjord,62,32521,27929,True,"['Mariager', 'Arden', 'Hadsund', 'Hobro']",85.8798929922204,2001
+Middelfart,51,26955,23727,True,"['Ejby', 'Middelfart', 'Nørre Aaby']",88.02448525319979,2001
+Morsø,21,17516,15070,False,[],86.03562457182005,2001
+Norddjurs,64,32896,28049,True,"['Grenaa', 'Nørre Djurs', 'Rougsø', 'Sønderhald']",85.26568579766537,2001
+Nyborg,45,23574,20279,True,"['Nyborg', 'Ullerslev', 'Ørbæk']",86.02273691354883,2001
+Næstved,79,59193,50761,True,"['Fuglebjerg', 'Fladså', 'Holmegaard', 'Næstved', 'Suså']",85.75507239031643,2001
+Odder,19,15435,13610,False,[],88.17622287010042,2001
+Odense,29,144939,118914,False,[],82.04417030612878,2001
+Odsherred,53,25401,21840,True,"['Dragsholm', 'Nykøbing-Rørvig', 'Trundholm']",85.98086689500414,2001
+Randers,72,68379,57990,True,"['Langå', 'Nørhald', 'Purhus', 'Randers']",84.80673891106919,2001
+Rebild,49,20788,18224,True,"['Nørager', 'Skørping', 'Støvring']",87.66596113142198,2001
+Ringkøbing-Skjern,87,42962,37632,True,"['Egvad', 'Holmsland', 'Ringkøbing', 'Skjern', 'Videbæk']",87.5936874447186,2001
+Ringsted,21,22923,19535,False,[],85.22008463115648,2001
+Roskilde,55,59827,52894,True,"['Gundsø', 'Ramsø', 'Roskilde']",88.41158674177211,2001
+Rudersdal,32,40548,36137,True,"['Søllerød', 'Birkerød']",89.12153497089868,2001
+Rødovre,19,28792,24331,False,[],84.50611280911365,2001
+Samsø,13,3386,2919,False,[],86.20791494388659,2001
+Silkeborg,64,61753,54090,True,"['Gjern', 'Silkeborg', 'Them', 'Kjellerup']",87.5908862727317,2001
+Skanderborg,62,37591,33592,True,"['Galten', 'Hørning', 'Ry', 'Skanderborg']",89.36181532813706,2001
+Skive,64,37110,32234,True,"['Sallingsund', 'Skive', 'Spøttrup', 'Sundsøre']",86.86068445163029,2001
+Slagelse,68,58526,49260,True,"['Hashøj', 'Korsør', 'Skælskør', 'Slagelse']",84.16772032942625,2001
+Solrød,15,15132,13626,False,[],90.04758128469469,2001
+Sorø,45,21184,18308,True,"['Dianalund', 'Sorø', 'Stenlille']",86.4237160120846,2001
+Stevns,32,16681,14922,True,"['Vallø', 'Stevns']",89.45506864096878,2001
+Struer,30,17419,15239,True,"['Struer', 'Thyholm']",87.48493024857915,2001
+Svendborg,53,44949,38843,True,"['Egebjerg', 'Gudme', 'Svendborg']",86.4157155887784,2001
+Syddjurs,62,30017,26112,True,"['Ebeltoft', 'Midtdjurs', 'Rosenholm', 'Rønde']",86.99070526701536,2001
+Sønderborg,101,58212,50185,True,"['Augustenborg', 'Broager', 'Gråsten', 'Nordborg', 'Sundeved', 'Sydals', 'Sønderborg']",86.21074692503264,2001
+Thisted,53,35374,30318,True,"['Hanstholm', 'Sydthy', 'Thisted']",85.70701645276192,2001
+Tårnby,17,31168,26535,False,[],85.1353952772074,2001
+Tønder,96,32789,28007,True,"['Bredebro', 'Højer', 'Løgumkloster', 'Nørre-Rangstrup', 'Skærbæk', 'Tønder']",85.41584067827625,2001
+Vallensbæk,15,9448,8438,False,[],89.30990685859442,2001
+Varde,73,37707,33040,True,"['Blaabjerg', 'Blåvandshuk', 'Helle', 'Varde', 'Ølgod']",87.62298777415334,2001
+Vejen,68,30688,26715,True,"['Rødding', 'Brørup', 'Holsted', 'Vejen']",87.05357142857143,2001
+Vejle,89,76952,66559,True,"['Børkop', 'Egtved', 'Give', 'Jelling', 'Vejle']",86.49417818900093,2001
+Vesthimmerland,68,29842,25376,True,"['Aalestrup', 'Farsø', 'Løgstør', 'Aars']",85.03451511292809,2001
+Viborg,100,66538,58071,True,"['Bjerringbro', 'Fjends', 'Karup', 'Møldrup', 'Tjele', 'Viborg']",87.27494063542636,2001
+Vordingborg,66,35818,31156,True,"['Langebæk', 'Møn', 'Præstø', 'Vordingborg']",86.98419788932938,2001
+Århus,31,226719,193012,False,[],85.13269730371076,2001
+Ærø,24,5834,4939,True,"['Marstal', 'Ærøskøbing']",84.65889612615702,2001

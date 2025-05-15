@@ -1,10 +1,10 @@
 import requests
-from bs4 import BeautifulSoup
+import pandas as pd
 import chardet
+from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import logging
 import re
-import pandas as pd
 from pathlib import Path
 
 # Configure logging
@@ -82,9 +82,10 @@ def extract_kommune_stats(html_content):
     stat_tables = soup.find_all("table", attrs={"bgcolor": "#EFEFEF"})
 
     if stat_tables and len(stat_tables) > 0:
-        # Process the first relevant table
+        # Process the relevant table [0]
         rows = stat_tables[0].find_all("tr")
 
+        # Extract relevant cells from the table
         for row in rows:
             cells = row.find_all("td")
             if len(cells) == 2:
@@ -96,6 +97,7 @@ def extract_kommune_stats(html_content):
                 elif "Stemmeprocent" in label:
                     stats["stemmeprocent"] = value
                 elif "Optalte stemmer" in label:
+                    stats["stemmeprocent"] = value
                     stats["optalte_stemmer"] = value
 
     return stats
@@ -123,7 +125,7 @@ def extract_counselor_count(html_content, base_directory):
 
     for link in soup.find_all("a"):
         href = link.get("href", "")
-        # Check if the link URL contains "km" which is the prefix for council pages
+        # Find link to council page
         if href and (href.startswith("km") or href.startswith("am")):
             council_link = href
             break
@@ -144,7 +146,7 @@ def extract_counselor_count(html_content, base_directory):
     # Parse the council page to count the number of counselors
     council_soup = BeautifulSoup(council_html, "html.parser")
 
-    # Method 1: Look for the highest mandate number in the table
+    # Look for the highest mandate number in the table
     highest_mandate = 0
 
     # Find all cells that might contain mandate numbers
@@ -162,7 +164,7 @@ def extract_counselor_count(html_content, base_directory):
     if highest_mandate > 0:
         return highest_mandate
 
-    # If method 1 fails, return None
+    # If exception, return None
     return None
 
 
@@ -182,13 +184,13 @@ def extract_kommune_name_from_page(html_content):
 
     soup = BeautifulSoup(html_content, "html.parser")
 
-    # Strategy 1: Check the title first
+    # Locate title
     title = soup.find("title")
     if title:
         title_text = title.get_text().strip()
         # Case-insensitive search for "kommune"
         if "kommune" in title_text.lower():
-            # Extract kommune name from title (e.g., "Kommunalvalg Ærø kommune" → "Ærø")
+            # Extract kommune name from title using regex (e.g., "Kommunalvalg Ærø kommune" → "Ærø")
             parts = title_text.split()
             for i, part in enumerate(parts):
                 if "kommune" in part.lower() and i > 0:
@@ -406,6 +408,7 @@ def process_kommune_2001(kommune_data, year, stats_counter):
         stats.get("stemmeberettigede") is not None
         and stats.get("stemmeprocent") is not None
         and stats.get("optalte_stemmer") is not None
+        and stats.get("stemmeprocent") is not None
         and counselor_count is not None
     ):
         stats_counter["fully_successful"] += 1
@@ -531,6 +534,7 @@ def scrape_all_kommuner(kommune_df, base_url, year):
     kommune_df["stemmeberettigede"] = None
     kommune_df["stemmeprocent"] = None
     kommune_df["optalte_stemmer"] = None
+    kommune_df["stemmeprocent"] = None
     kommune_df["counselor_count"] = None  # New column for counselor count
     kommune_df["year"] = year  # Add year column
 
@@ -761,74 +765,128 @@ def apply_hardcoded_fixes(df, year):
             "Rønne": {
                 "amt": "Bornholms Amt",
                 "counselor_count": 21,
+                "stemmeberettigede": 11703,
+                "optalte_stemmer": 9716,
+                "stemmeprocent": 83,
             },
             "Bredebro": {
                 "amt": "Sønderjyllands Amt",
                 "counselor_count": 13,
+                "stemmeberettigede": 2777,
+                "optalte_stemmer": 2413,
+                "stemmeprocent": 86.9,
             },
             "Rougsø": {
                 "amt": "Århus Amt",
                 "counselor_count": 15,
+                "stemmeberettigede": 6165,
+                "optalte_stemmer": 5178,
+                "stemmeprocent": 84,
             },
             "Stenlille": {
                 "amt": "Vestsjællands Amt",
                 "counselor_count": 13,
+                "stemmeberettigede": 4110,
+                "optalte_stemmer": 3582,
+                "stemmeprocent": 87.2,
             },
             "Ullerslev": {
                 "amt": "Fyns Amt",
                 "counselor_count": 13,
+                "stemmeberettigede": 3721,
+                "optalte_stemmer": 3338,
+                "stemmeprocent": 89.7,
             },
             "Løgstør": {
                 "amt": "Nordjyllands Amt",
                 "counselor_count": 19,
+                "stemmeberettigede": 8064,
+                "optalte_stemmer": 6715,
+                "stemmeprocent": 83.3,
             },
             "Thyborøn-Harboøre": {
                 "amt": "Ringkøbing Amt",
                 "counselor_count": 13,
+                "stemmeberettigede": 3629,
+                "optalte_stemmer": 3037,
+                "stemmeprocent": 83.7,
             },
             "Sydfalster": {
                 "amt": "Storstrøms Amt",
                 "counselor_count": 15,
+                "stemmeberettigede": 5711,
+                "optalte_stemmer": 5123,
+                "stemmeprocent": 89.7,
             },
             "Jelling": {
                 "amt": "Vejle Amt",
                 "counselor_count": 13,
+                "stemmeberettigede": 4088,
+                "optalte_stemmer": 3695,
+                "stemmeprocent": 90.4,
             },
             "Langeskov": {
                 "amt": "Fyns Amt",
                 "counselor_count": 13,
+                "stemmeberettigede": 4660,
+                "optalte_stemmer": 4205,
+                "stemmeprocent": 90.2,
             },
             "Nykøbing-Rørvig": {
                 "amt": "Vestsjællands Amt",
                 "counselor_count": 15,
+                "stemmeberettigede": 6084,
+                "optalte_stemmer": 5229,
+                "stemmeprocent": 85.9,
             },
             "Ørbæk": {
                 "amt": "Fyns Amt",
                 "counselor_count": 15,
+                "stemmeberettigede": 5080,
+                "optalte_stemmer": 4505,
+                "stemmeprocent": 88.7,
             },
             "Holmsland": {
                 "amt": "Ringkøbing Amt",
                 "counselor_count": 11,
+                "stemmeberettigede": 3977,
+                "optalte_stemmer": 3324,
+                "stemmeprocent": 83.6,
             },
             "Broby": {
                 "amt": "Fyns Amt",
                 "counselor_count": 15,
+                "stemmeberettigede": 4774,
+                "optalte_stemmer": 4188,
+                "stemmeprocent": 87.7,
             },
             "Aulum-Haderup": {
                 "amt": "Ringkøbing Amt",
                 "counselor_count": 15,
+                "stemmeberettigede": 4966,
+                "optalte_stemmer": 4470,
+                "stemmeprocent": 90,
             },
             "Lunderskov": {
                 "amt": "Vejle Amt",
                 "counselor_count": 13,
+                "stemmeberettigede": 3898,
+                "optalte_stemmer": 3445,
+                "stemmeprocent": 88.4,
             },
             "Læsø": {
                 "amt": "Nordjyllands Amt",
                 "counselor_count": 9,
+                "stemmeberettigede": 1800,
+                "optalte_stemmer": 1546,
+                "stemmeprocent": 85.9,
             },
             "Fanø": {
                 "amt": "Ribe Amt",
                 "counselor_count": 11,
+                "stemmeberettigede": 2527,
+                "optalte_stemmer": 2239,
+                "stemmeprocent": 88.6,
             },
         }
 
@@ -843,6 +901,9 @@ def apply_hardcoded_fixes(df, year):
                     "href": "",  # Placeholder href
                     "amt": data["amt"],
                     "counselor_count": data["counselor_count"],
+                    "stemmeberettigede": data["stemmeberettigede"],
+                    "optalte_stemmer": data["optalte_stemmer"],
+                    "stemmeprocent": data["stemmeprocent"],
                     "year": year,
                     # Other columns will be set to NaN by default
                 }
@@ -856,6 +917,7 @@ def log_statistics_summary(stats_counter, df):
     # Show some statistics
     stats_columns = ["stemmeberettigede", "stemmeprocent", "optalte_stemmer"]
     missing_data = df[stats_columns].isna().sum()
+    stats_columns = ["stemmeberettigede", "stemmeprocent", "optalte_stemmer"]
     logger.info(f"\nMissing data count: {missing_data}")
 
     valid_counts = len(df) - missing_data
@@ -893,28 +955,6 @@ def main():
         year_df = scrape_election_year(year)
         if year_df is not None:
             all_data.append(year_df)
-
-    # Combine all data frames
-    if all_data:
-        combined_df = pd.concat(all_data, ignore_index=True)
-
-        # Fix encoding for Danish characters (final pass)
-        fix_danish_encoding(combined_df)
-
-        # Save the combined data
-        output_dir = Path("data/kmdvalg")
-        output_dir.mkdir(parents=True, exist_ok=True)
-        combined_output_file = f"{output_dir}/kommune_data_combined.csv"
-        combined_df.to_csv(combined_output_file, index=False, encoding="utf-8-sig")
-        logger.info(
-            f"Saved combined data with {len(combined_df)} records to {combined_output_file}"
-        )
-
-        # Print summary of combined data
-        logger.info("\n===== COMBINED DATA SUMMARY =====")
-        by_year = combined_df.groupby("year").size()
-        logger.info(f"Records by year:\n{by_year}")
-        logger.info("===============================")
 
 
 if __name__ == "__main__":
