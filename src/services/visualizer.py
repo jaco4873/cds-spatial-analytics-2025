@@ -10,6 +10,7 @@ import matplotlib.image as mpimg
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 from services.data_analyzer import DataAnalyzer
 from adjustText import adjust_text
+import geopandas as gpd
 
 
 class Visualizer:
@@ -173,16 +174,16 @@ class Visualizer:
             year: The election year (2005 or 2009)
         """
         # Prepare spatial data for both years to calculate a consistent scale
-        spatial_2005, spatial_2009 = self.data_analyzer.prepare_spatial_data()
+        _, spatial_2005, spatial_2009 = self.data_analyzer.get_spatial_data()
 
         # Calculate global min and max for consistent coloring across both years
         global_min = min(
-            spatial_2005["stemmeprocent_election"].min(),
-            spatial_2009["stemmeprocent_election"].min(),
+            spatial_2005["stemmeprocent"].min(),
+            spatial_2009["stemmeprocent"].min(),
         )
         global_max = max(
-            spatial_2005["stemmeprocent_election"].max(),
-            spatial_2009["stemmeprocent_election"].max(),
+            spatial_2005["stemmeprocent"].max(),
+            spatial_2009["stemmeprocent"].max(),
         )
 
         # Select the data for the requested year
@@ -206,7 +207,7 @@ class Visualizer:
 
         # Plot the data
         spatial_data_web.plot(
-            column="stemmeprocent_election",
+            column="stemmeprocent",
             ax=ax,
             cmap=self.cmap,
             vmin=vmin,
@@ -236,8 +237,8 @@ class Visualizer:
         # Create the Copenhagen inset map with the same color scale
         copenhagen_image = self.create_copenhagen_map(
             year,
-            "stemmeprocent_election",
-            "stemmeprocent_election",
+            "stemmeprocent",
+            "stemmeprocent",
             cmap=self.cmap,
             vmin=vmin,
             vmax=vmax,
@@ -327,14 +328,17 @@ class Visualizer:
     def create_representation_density_map(self, year: int) -> None:
         """Create a publication-quality choropleth map showing representation density."""
         # Prepare spatial data
-        spatial_2005, spatial_2009 = self.data_analyzer.prepare_spatial_data()
+        spatial_2001, spatial_2005, spatial_2009 = self.data_analyzer.get_spatial_data()
 
-        if year == 2005:
+        if year == 2001:
+            spatial_data = spatial_2001
+
+        elif year == 2005:
             spatial_data = spatial_2005
         elif year == 2009:
             spatial_data = spatial_2009
         else:
-            raise ValueError("Year must be either 2005 or 2009")
+            raise ValueError("Year must be either 2001, 2005 or 2009")
 
         # Calculate representation density using the refactored method
         spatial_data = self.data_analyzer.calculate_representation_density(
@@ -379,19 +383,16 @@ class Visualizer:
         highest_density_value = highest_density_row["density"]
 
         # Get Copenhagen area for exclusion
-        metro_2005, metro_2009 = (
-            self.data_analyzer.data_loader.get_copenhagen_metropolitan_area()
+        metro_2001, _, metro_2009 = (
+            self.data_analyzer.get_copenhagen_metropolitan_area()
         )
-        metro_data = metro_2005 if year == 2005 else metro_2009
+        metro_data = metro_2001 if year == 2001 else metro_2009
         metro_data_web = self.prepare_spatial_data_for_mapping(metro_data)
 
         # Dissolve to get a single polygon for easy containment checking
         if len(metro_data_web) > 1:
             metro_dissolved = metro_data_web.copy()
             metro_dissolved["dissolve_key"] = 1
-            metro_mask = metro_dissolved.dissolve(by="dissolve_key")
-        else:
-            metro_mask = metro_data_web
 
         for _, row in spatial_data_web.iterrows():
             if row["density"] > 6000:
@@ -411,7 +412,10 @@ class Visualizer:
                 # Add offset to x-coordinate for Copenhagen
                 x_offset = 0
                 y_offset = 0
-                if row["density"] == highest_density_value:
+                if (
+                    highest_density_value is not None
+                    and row["density"] == highest_density_value
+                ):
                     x_offset = 15000  # Offset in map units (meters for UTM)
                     y_offset = 10000
 
@@ -440,7 +444,7 @@ class Visualizer:
             "density",
             "density",
             cmap=self.cmap,
-            norm=norm,  # Pass the same norm object
+            norm=norm,
         )
 
         self.add_copenhagen_inset_from_image(ax, copenhagen_image)
@@ -457,30 +461,27 @@ class Visualizer:
 
     def create_turnout_comparison_chart(self) -> None:
         """Create a visually appealing bar chart comparing turnout before and after the reform."""
-        # Instead of using turnout_analysis["overall_turnout"], calculate weighted averages for all municipalities:
+        # Load the election data properly through data_analyzer's data_loader
+        election_2005_df = self.data_analyzer.data_loader.load_2005_data()
+        election_2009_df = self.data_analyzer.data_loader.load_2009_data()
+
         overall_2005 = (
-            self.data_analyzer.election_2005_df["stemmeprocent"]
-            * self.data_analyzer.election_2005_df["stemmeberettigede"]
-        ).sum() / self.data_analyzer.election_2005_df["stemmeberettigede"].sum()
+            election_2005_df["stemmeprocent"] * election_2005_df["stemmeberettigede"]
+        ).sum() / election_2005_df["stemmeberettigede"].sum()
 
         overall_2009 = (
-            self.data_analyzer.election_2009_df["stemmeprocent"]
-            * self.data_analyzer.election_2009_df["stemmeberettigede"]
-        ).sum() / self.data_analyzer.election_2009_df["stemmeberettigede"].sum()
+            election_2009_df["stemmeprocent"] * election_2009_df["stemmeberettigede"]
+        ).sum() / election_2009_df["stemmeberettigede"].sum()
 
         # Segregate municipalities by whether they were merged or not
-        # First check if 'merged' column exists, otherwise use 'merged_election'
-        merge_column = (
-            "merged"
-            if "merged" in self.data_analyzer.election_2005_df.columns
-            else "merged_election"
-        )
+        # First check if 'merged' column exists, otherwise use 'merged'
+        merge_column = "merged"
 
-        merged_munis_2005 = self.data_analyzer.election_2005_df[
-            self.data_analyzer.election_2005_df[merge_column] == True  # noqa: E712
+        merged_munis_2005 = election_2005_df[
+            election_2005_df[merge_column] == True  # noqa: E712
         ]
-        unmerged_munis_2005 = self.data_analyzer.election_2005_df[
-            self.data_analyzer.election_2005_df[merge_column] == False  # noqa: E712
+        unmerged_munis_2005 = election_2005_df[
+            election_2005_df[merge_column] == False  # noqa: E712
         ]
 
         # Calculate weighted average turnout for merged and unmerged municipalities in 2005
@@ -494,8 +495,8 @@ class Visualizer:
 
         # Find the unmerged municipalities in 2009 (same names as 2005)
         unmerged_names = unmerged_munis_2005["name"].tolist()
-        unmerged_munis_2009 = self.data_analyzer.election_2009_df[
-            self.data_analyzer.election_2009_df["name"].isin(unmerged_names)
+        unmerged_munis_2009 = election_2009_df[
+            election_2009_df["name"].isin(unmerged_names)
         ]
 
         # Calculate weighted average turnout for unmerged municipalities in 2009
@@ -505,8 +506,8 @@ class Visualizer:
         ).sum() / unmerged_munis_2009["stemmeberettigede"].sum()
 
         # All other municipalities in 2009 are merged
-        merged_munis_2009 = self.data_analyzer.election_2009_df[
-            ~self.data_analyzer.election_2009_df["name"].isin(unmerged_names)
+        merged_munis_2009 = election_2009_df[
+            ~election_2009_df["name"].isin(unmerged_names)
         ]
         merged_avg_2009 = (
             merged_munis_2009["stemmeprocent"] * merged_munis_2009["stemmeberettigede"]
@@ -648,7 +649,7 @@ class Visualizer:
     def create_merged_status_map(self) -> None:
         """Create a map showing municipalities by merger status with turnout change labels."""
         # Get the spatial data that contains the merged flag
-        spatial_2005, spatial_2009 = self.data_analyzer.prepare_spatial_data()
+        _, spatial_2005, _ = self.data_analyzer.get_spatial_data()
 
         # Also get the turnout change data
         turnout_change_gdf = self.data_analyzer.prepare_turnout_change_data()
@@ -669,7 +670,7 @@ class Visualizer:
 
         # Plot the data with binary coloring
         spatial_2005_web.plot(
-            column="merged_election",
+            column="merged",
             ax=ax,
             cmap=cmap,
             categorical=True,
@@ -704,9 +705,7 @@ class Visualizer:
         )
 
         # Get Copenhagen metropolitan area for label exclusion
-        metro_2005, _ = (
-            self.data_analyzer.data_loader.get_copenhagen_metropolitan_area()
-        )
+        _, metro_2005, _ = self.data_analyzer.get_copenhagen_metropolitan_area()
         metro_data_web = self.prepare_spatial_data_for_mapping(metro_2005)
 
         # Add centroid labels with turnout change values using adjustText
@@ -735,8 +734,8 @@ class Visualizer:
         # Create and add Copenhagen inset with both merger status coloring and turnout change labels
         copenhagen_image = self.create_copenhagen_map(
             2005,  # Using 2005 data since we're showing merger status
-            "merged_election",
-            "merged_election",
+            "merged",
+            "merged",
             cmap=cmap,
             categorical=True,
             add_labels=True,
@@ -801,10 +800,12 @@ class Visualizer:
             Numpy array with the generated image
         """
         # Get the regular Copenhagen metro data first
-        metro_2005, metro_2009 = (
-            self.data_analyzer.data_loader.get_copenhagen_metropolitan_area()
+        metro_2001, metro_2005, metro_2009 = (
+            self.data_analyzer.get_copenhagen_metropolitan_area()
         )
-        metro_data = metro_2005 if year == 2005 else metro_2009
+        metro_data = (
+            metro_2001 if year == 2001 else metro_2005 if year == 2005 else metro_2009
+        )
         metro_data_web = self.prepare_spatial_data_for_mapping(metro_data)
 
         # Special handling for different column types
@@ -988,14 +989,18 @@ class Visualizer:
             # Add connector lines if requested
             if add_connectors:
                 # Get the Copenhagen metropolitan area for the current year
-                metro_2005, metro_2009 = (
-                    self.data_analyzer.data_loader.get_copenhagen_metropolitan_area()
+                metro_2001, metro_2005, metro_2009 = (
+                    self.data_analyzer.get_copenhagen_metropolitan_area()
                 )
                 # Get the most recently used metro data
                 metro_data = (
-                    metro_2005
+                    metro_2001
+                    if hasattr(ax, "year") and ax.year == 2001
+                    else metro_2005
                     if hasattr(ax, "year") and ax.year == 2005
                     else metro_2009
+                    if hasattr(ax, "year") and ax.year == 2009
+                    else None
                 )
                 metro_data_web = self.prepare_spatial_data_for_mapping(metro_data)
 
@@ -1168,7 +1173,7 @@ class Visualizer:
 
         Args:
             ax: The matplotlib axis to add the mask to
-            year: The election year (2005 or 2009)
+            year: The election year (2001, 2005 or 2009)
         """
         self.logger.info("Masking Copenhagen metropolitan area in main map")
 
@@ -1176,10 +1181,13 @@ class Visualizer:
         ax.year = year
 
         # Get the Copenhagen metropolitan area data
-        metro_2005, metro_2009 = (
-            self.data_analyzer.data_loader.get_copenhagen_metropolitan_area()
+        metro_2001, metro_2005, metro_2009 = (
+            self.data_analyzer.get_copenhagen_metropolitan_area()
         )
-        metro_data = metro_2005 if year == 2005 else metro_2009
+
+        metro_data = (
+            metro_2001 if year == 2001 else metro_2005 if year == 2005 else metro_2009
+        )
 
         # Ensure the data is in the correct projection
         metro_data_web = self.prepare_spatial_data_for_mapping(metro_data)
@@ -1209,15 +1217,11 @@ class Visualizer:
 
     def create_all_visualizations(self) -> None:
         """Create all visualizations at once."""
-        # Make sure data is loaded
-        if self.data_analyzer.election_2005_df is None:
-            self.data_analyzer.load_data()
-
         # Generate all maps and charts
         self.create_turnout_map(2005)
         self.create_turnout_map(2009)
         self.create_turnout_change_map()
-        self.create_representation_density_map(2005)
+        self.create_representation_density_map(2001)
         self.create_representation_density_map(2009)
         self.create_turnout_comparison_chart()
         self.create_merged_status_map()
@@ -1303,3 +1307,29 @@ class Visualizer:
                 linewidth=linewidth,
                 zorder=9,
             )
+
+    def get_copenhagen_data_for_year(self, year: int) -> gpd.GeoDataFrame:
+        """Get Copenhagen data for a specific year with correct projection.
+
+        Args:
+            year: The year to get data for (2001, 2005, or 2009)
+
+        Returns:
+            GeoDataFrame with Copenhagen data in EPSG:32632 projection
+        """
+        metro_2001, metro_2005, metro_2009 = (
+            self.data_analyzer.get_copenhagen_metropolitan_area()
+        )
+
+        # Select the correct year
+        if year == 2001:
+            metro_data = metro_2001
+        elif year == 2005:
+            metro_data = metro_2005
+        elif year == 2009:
+            metro_data = metro_2009
+        else:
+            raise ValueError(f"Invalid year: {year}. Must be 2001, 2005, or 2009.")
+
+        # Ensure correct projection
+        return self.prepare_spatial_data_for_mapping(metro_data)

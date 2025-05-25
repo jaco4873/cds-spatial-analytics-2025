@@ -2,11 +2,13 @@
 import logging
 import json
 from pathlib import Path
+import numpy as np
 import click
 
 from services.data_loader import DataLoader
 from services.data_analyzer import DataAnalyzer
 from services.visualizer import Visualizer
+from services.data_merger import DataMerger
 
 
 def setup_logging():
@@ -19,6 +21,17 @@ def setup_logging():
         ],
     )
     return logging.getLogger(__name__)
+
+
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return super().default(obj)
 
 
 @click.command()
@@ -51,12 +64,12 @@ def main(output_dir, report_file, visualize):
 
     # Initialize components
     data_loader = DataLoader()
-    data_analyzer = DataAnalyzer(data_loader)
+    data_merger = DataMerger()
+    data_analyzer = DataAnalyzer(data_loader, data_merger)
 
     try:
         # Load data
         logger.info("Loading data...")
-        data_analyzer.load_data()
 
         # Generate analysis report
         logger.info("Generating analysis report...")
@@ -65,7 +78,7 @@ def main(output_dir, report_file, visualize):
         # Save report to JSON file
         report_path = output_dir_path / report_file
         with open(report_path, "w", encoding="utf-8") as f:
-            json.dump(report, f, indent=2, ensure_ascii=False)
+            json.dump(report, f, indent=2, ensure_ascii=False, cls=NumpyEncoder)
         logger.info(f"Analysis report saved to {report_path}")
 
         # Generate visualizations if requested
@@ -77,41 +90,41 @@ def main(output_dir, report_file, visualize):
 
         # Log summary findings
         logger.info("===== SUMMARY FINDINGS =====")
+
+        # Before reform metrics
+        logger.info("--- Before Reform ---")
         logger.info(
-            f"Municipalities before reform: {report['summary']['municipalities_before_reform']}"
+            f"Total councilors before reform (2001): {report['summary']['total_councilors_before']}"
         )
         logger.info(
-            f"Municipalities after reform: {report['summary']['municipalities_after_reform']}"
+            f"Representation density before reform (2001): {report['summary']['representation_density_before']:.1f} citizens per councilor"
         )
         logger.info(
-            f"Reduction in municipalities: {report['summary']['reduction_percentage']:.1f}%"
+            f"Overall voter turnout before reform (2005): {report['summary']['overall_turnout_before']:.2f}%"
+        )
+
+        # After reform metrics
+        logger.info("--- After Reform ---")
+        logger.info(
+            f"Total councilors after reform (2009): {report['summary']['total_councilors_after']}"
         )
         logger.info(
-            f"Total councilors before reform: {report['summary']['total_councilors_before']}"
+            f"Representation density after reform (2009): {report['summary']['representation_density_after']:.1f} citizens per councilor"
         )
         logger.info(
-            f"Total councilors after reform: {report['summary']['total_councilors_after']}"
+            f"Overall voter turnout after reform (2009): {report['summary']['overall_turnout_after']:.2f}%"
         )
+
+        # Change metrics
+        logger.info("--- Changes ---")
         logger.info(
             f"Reduction in councilors: {report['summary']['councilors_reduction_percentage']:.1f}%"
         )
         logger.info(
-            f"Overall voter turnout before reform: {report['summary']['overall_turnout_before']:.2f}%"
-        )
-        logger.info(
-            f"Overall voter turnout after reform: {report['summary']['overall_turnout_after']:.2f}%"
+            f"Increase in representation density: {report['summary']['representation_density_increase_percentage']:.1f}%"
         )
         logger.info(
             f"Change in voter turnout: {report['summary']['overall_turnout_change']:.2f}%"
-        )
-        logger.info(
-            f"Representation density before reform: {report['summary']['representation_density_before']:.1f} citizens per councilor"
-        )
-        logger.info(
-            f"Representation density after reform: {report['summary']['representation_density_after']:.1f} citizens per councilor"
-        )
-        logger.info(
-            f"Increase in representation density: {report['summary']['representation_density_increase_percentage']:.1f}%"
         )
 
         logger.info("Municipal reform analysis completed successfully")
@@ -123,4 +136,4 @@ def main(output_dir, report_file, visualize):
 
 
 if __name__ == "__main__":
-    main()  # Click handles the exit code
+    main()

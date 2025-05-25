@@ -1,113 +1,107 @@
 import logging
 import pandas as pd
 import geopandas as gpd
+from typing import Any
+from functools import lru_cache
 
 from services.data_loader import DataLoader
+from services.data_merger import DataMerger
 
 
 class DataAnalyzer:
     """Analyzes municipal election data to assess the impact of the 2007 Danish municipal reform."""
 
-    def __init__(self, data_loader: DataLoader):
-        """Initialize the data analyzer with a data loader.
+    def __init__(self, data_loader: DataLoader, data_merger: DataMerger):
+        """Initialize the data analyzer with a data loader and merger.
 
         Args:
             data_loader: An instance of DataLoader for retrieving the necessary data
+            data_merger: An instance of DataMerger for merging spatial and election data
         """
         self.logger = logging.getLogger(__name__)
         self.data_loader = data_loader
-        self.election_2005_df = None
-        self.election_2009_df = None
-        self.municipality_gdf = None
+        self.data_merger = data_merger
+        self.municipality_gdf: gpd.GeoDataFrame | None = None
+        self._cached_spatial_data: (
+            tuple[gpd.GeoDataFrame, gpd.GeoDataFrame, gpd.GeoDataFrame] | None
+        ) = None
 
-        # Councilor counts before and after reform
-        self.TOTAL_COUNCILORS_2005 = 4597
-        self.TOTAL_COUNCILORS_2009 = 2468
+    def _load_geographical_data(self) -> None:
+        """Load geographical data if not already loaded."""
+        if self.municipality_gdf is None:
+            self.municipality_gdf = self.data_loader.load_geographical_data()
 
-    def load_data(self) -> None:
-        """Load all necessary data for analysis."""
-        # Load election data
-        self.election_2005_df, self.election_2009_df = (
-            self.data_loader.load_election_data()
-        )
+    def _calculate_total_councilors(self, election_df: pd.DataFrame) -> int:
+        """Calculate total councilors from election data.
 
-        # Load geographical data
-        self.municipality_gdf = self.data_loader.load_geographical_data()
+        Args:
+            election_df: DataFrame containing election data with counselor_count column
 
-        # Clean and prepare data
-        self._prepare_data()
+        Returns:
+            Total number of councilors
+        """
+        return election_df["counselor_count"].sum()
 
-        self.logger.info("Data loading complete")
-
-    def _prepare_data(self) -> None:
-        """Clean and prepare data for analysis."""
-
-        # # Convert data types
-        # for df in [self.election_2005_df, self.election_2009_df]:
-        #     df["stemmeberettigede"] = pd.to_numeric(df["stemmeberettigede"])
-        #     df["stemmeprocent"] = pd.to_numeric(df["stemmeprocent"])
-        #     df["optalte_stemmer"] = pd.to_numeric(df["optalte_stemmer"])
-        #     df["year"] = pd.to_numeric(df["year"])
-
-    def analyze_voter_turnout(self) -> dict:
+    def analyze_voter_turnout(self) -> dict[str, Any]:
         """Analyze voter turnout before and after the reform.
 
         Returns:
-            Dict: Analysis results including average turnout and changes
+            Dict with analysis results including average turnout and changes
         """
-        if self.election_2005_df is None or self.election_2009_df is None:
-            self.load_data()
+        # Load specific years needed for this analysis
+        election_2005_df = self.data_loader.load_2005_data()
+        election_2009_df = self.data_loader.load_2009_data()
 
         # Calculate overall turnout
         overall_turnout_2005 = (
-            self.election_2005_df["optalte_stemmer"].sum()
-            / self.election_2005_df["stemmeberettigede"].sum()
+            election_2005_df["optalte_stemmer"].sum()
+            / election_2005_df["stemmeberettigede"].sum()
             * 100
         )
         overall_turnout_2009 = (
-            self.election_2009_df["optalte_stemmer"].sum()
-            / self.election_2009_df["stemmeberettigede"].sum()
+            election_2009_df["optalte_stemmer"].sum()
+            / election_2009_df["stemmeberettigede"].sum()
             * 100
         )
 
         # Calculate average municipal turnout
-        avg_turnout_2005 = self.election_2005_df["stemmeprocent"].mean()
-        avg_turnout_2009 = self.election_2009_df["stemmeprocent"].mean()
+        avg_turnout_2005 = election_2005_df["stemmeprocent"].mean()
+        avg_turnout_2009 = election_2009_df["stemmeprocent"].mean()
 
         # Calculate median municipal turnout
-        median_turnout_2005 = self.election_2005_df["stemmeprocent"].median()
-        median_turnout_2009 = self.election_2009_df["stemmeprocent"].median()
+        median_turnout_2005 = election_2005_df["stemmeprocent"].median()
+        median_turnout_2009 = election_2009_df["stemmeprocent"].median()
 
         # Calculate variance and standard deviation
-        variance_2005 = self.election_2005_df["stemmeprocent"].var()
-        variance_2009 = self.election_2009_df["stemmeprocent"].var()
+        variance_2005 = election_2005_df["stemmeprocent"].var()
+        variance_2009 = election_2009_df["stemmeprocent"].var()
 
         # Identify top 5 and bottom 5 municipalities by turnout
-        top5_2005 = self.election_2005_df.nlargest(5, "stemmeprocent")[
+        top5_2005 = election_2005_df.nlargest(5, "stemmeprocent")[
             ["name", "stemmeprocent"]
         ]
-        bottom5_2005 = self.election_2005_df.nsmallest(5, "stemmeprocent")[
+        bottom5_2005 = election_2005_df.nsmallest(5, "stemmeprocent")[
             ["name", "stemmeprocent"]
         ]
 
-        top5_2009 = self.election_2009_df.nlargest(5, "stemmeprocent")[
+        top5_2009 = election_2009_df.nlargest(5, "stemmeprocent")[
             ["name", "stemmeprocent"]
         ]
-        bottom5_2009 = self.election_2009_df.nsmallest(5, "stemmeprocent")[
+        bottom5_2009 = election_2009_df.nsmallest(5, "stemmeprocent")[
             ["name", "stemmeprocent"]
         ]
 
         # Identify municipalities present in both datasets (unchanged)
-        common_municipalities = set(self.election_2005_df["name"]).intersection(
-            set(self.election_2009_df["name"])
+        common_municipalities = set(election_2005_df["name"]).intersection(
+            set(election_2009_df["name"])
         )
 
         # Create a subset for unchanged municipalities
-        unchanged_2005 = self.election_2005_df[
-            self.election_2005_df["name"].isin(common_municipalities)
+        unchanged_2005 = election_2005_df[
+            election_2005_df["name"].isin(common_municipalities)
         ]
-        unchanged_2009 = self.election_2009_df[
-            self.election_2009_df["name"].isin(common_municipalities)
+        unchanged_2009 = election_2009_df[
+            election_2009_df["name"].isin(common_municipalities)
         ]
 
         # Calculate average turnout change for unchanged municipalities
@@ -175,135 +169,79 @@ class DataAnalyzer:
             },
         }
 
-    def analyze_representation_density(self) -> dict:
+    def analyze_representation_density(self) -> dict[str, Any]:
         """Analyze representation density (citizens per councilor) before and after the reform.
+        Uses 2001 data for pre-reform and 2009 for post-reform.
 
         Returns:
-            Dict: Analysis results including average representation density and changes
+            Dict with analysis results including average representation density and changes
         """
-        if self.election_2005_df is None or self.election_2009_df is None:
-            self.load_data()
+        # Load the years needed for this analysis
+        election_2001_df = self.data_loader.load_2001_data()
+        election_2009_df = self.data_loader.load_2009_data()
+
+        # Calculate total councilors
+        total_councilors_2001 = self._calculate_total_councilors(election_2001_df)
+        total_councilors_2009 = self._calculate_total_councilors(election_2009_df)
 
         # Get total population (using eligible voters as a proxy)
-        total_population_2005 = self.election_2005_df["stemmeberettigede"].sum()
-        total_population_2009 = self.election_2009_df["stemmeberettigede"].sum()
+        total_population_2001 = election_2001_df["stemmeberettigede"].sum()
+        total_population_2009 = election_2009_df["stemmeberettigede"].sum()
 
         # Calculate overall representation density (citizens per councilor)
-        density_2005 = total_population_2005 / self.TOTAL_COUNCILORS_2005
-        density_2009 = total_population_2009 / self.TOTAL_COUNCILORS_2009
+        density_2001 = total_population_2001 / total_councilors_2001
+        density_2009 = total_population_2009 / total_councilors_2009
 
-        # Estimate councilors per municipality (simplified approach)
-        councilors_per_muni_2005 = self.TOTAL_COUNCILORS_2005 / len(
-            self.election_2005_df
-        )
-        councilors_per_muni_2009 = self.TOTAL_COUNCILORS_2009 / len(
-            self.election_2009_df
-        )
+        # Calculate density for each municipality
+        spatial_2001 = self.calculate_representation_density(election_2001_df, 2001)
+        spatial_2009 = self.calculate_representation_density(election_2009_df, 2009)
 
-        # Estimate average municipal representation density
-        self.election_2005_df["est_councilors"] = councilors_per_muni_2005
-        self.election_2009_df["est_councilors"] = councilors_per_muni_2009
+        # Calculate average municipal representation density
+        avg_density_2001 = spatial_2001["density"].mean()
+        avg_density_2009 = spatial_2009["density"].mean()
 
-        self.election_2005_df["density"] = (
-            self.election_2005_df["stemmeberettigede"]
-            / self.election_2005_df["est_councilors"]
-        )
-        self.election_2009_df["density"] = (
-            self.election_2009_df["stemmeberettigede"]
-            / self.election_2009_df["est_councilors"]
-        )
-
-        avg_density_2005 = self.election_2005_df["density"].mean()
-        avg_density_2009 = self.election_2009_df["density"].mean()
-
-        # Calculate the actual number of municipalities before the reform
-        original_municipality_count = 0
-
-        # Add all municipalities that were never merged
-        non_merged_count = len(
-            self.election_2005_df[self.election_2005_df["merged"] == False]
-        )
-        original_municipality_count += non_merged_count
-
-        # For merged municipalities, calculate based on the merged_municipalities column
-        for _, row in self.election_2005_df[self.election_2005_df["merged"]].iterrows():
-            # Parse the merged_municipalities string to a list if needed
-            merged_list = row["merged_municipalities"]
-
-            # Check if it's already a list
-            if not isinstance(merged_list, list):
-                try:
-                    # It might be a string representation of a list
-                    if isinstance(merged_list, str):
-                        # Remove brackets, split by commas, and strip quotes
-                        merged_list = [
-                            item.strip(" '\"")
-                            for item in merged_list.strip("[]").split(",")
-                        ]
-                except Exception as e:
-                    self.logger.warning(f"Error parsing merged_municipalities: {e}")
-                    merged_list = []
-
-            # Count the merged municipalities
-            original_municipality_count += len(merged_list)
-
-        # If we didn't get a reasonable count, use the expected value
-        if original_municipality_count < 200:
-            self.logger.warning(
-                f"Calculated municipality count ({original_municipality_count}) seems wrong, using known value of 271"
-            )
-            original_municipality_count = 271  # Known value before the reform
-
+        # Return results with 2001 data instead of 2005
         return {
             "total_councilors": {
-                "2005": self.TOTAL_COUNCILORS_2005,
-                "2009": self.TOTAL_COUNCILORS_2009,
-                "change": self.TOTAL_COUNCILORS_2009 - self.TOTAL_COUNCILORS_2005,
-                "percent_change": (
-                    self.TOTAL_COUNCILORS_2009 - self.TOTAL_COUNCILORS_2005
-                )
-                / self.TOTAL_COUNCILORS_2005
+                "2001": total_councilors_2001,
+                "2009": total_councilors_2009,
+                "change": total_councilors_2009 - total_councilors_2001,
+                "percent_change": (total_councilors_2009 - total_councilors_2001)
+                / total_councilors_2001
                 * 100,
             },
             "overall_density": {
-                "2005": density_2005,
+                "2001": density_2001,
                 "2009": density_2009,
-                "change": density_2009 - density_2005,
-                "percent_change": (density_2009 - density_2005) / density_2005 * 100,
+                "change": density_2009 - density_2001,
+                "percent_change": (density_2009 - density_2001) / density_2001 * 100,
             },
             "avg_municipal_density": {
-                "2005": avg_density_2005,
+                "2001": avg_density_2001,
                 "2009": avg_density_2009,
-                "change": avg_density_2009 - avg_density_2005,
-                "percent_change": (avg_density_2009 - avg_density_2005)
-                / avg_density_2005
+                "change": avg_density_2009 - avg_density_2001,
+                "percent_change": (avg_density_2009 - avg_density_2001)
+                / avg_density_2001
                 * 100,
             },
             "municipalities_count": {
-                "2005": original_municipality_count,
-                "2009": len(self.election_2009_df),
-                "change": len(self.election_2009_df) - original_municipality_count,
-                "percent_change": (
-                    len(self.election_2009_df) - original_municipality_count
-                )
-                / original_municipality_count
+                "2001": len(election_2001_df),
+                "2009": len(election_2009_df),
+                "change": len(election_2009_df) - len(election_2001_df),
+                "percent_change": (len(election_2009_df) - len(election_2001_df))
+                / len(election_2001_df)
                 * 100,
             },
         }
 
-    def prepare_spatial_data(self) -> tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
-        """Prepare spatial data for visualization by merging election data with geographical boundaries.
+    def prepare_turnout_change_data(self) -> gpd.GeoDataFrame:
+        """Prepare data for turnout change visualization between 2005 and 2009.
 
         Returns:
-            Tuple[GeoDataFrame, GeoDataFrame]: GeoDataFrames for 2005 and 2009 with electoral data
+            GeoDataFrame with turnout change data for visualization
         """
-        # Use the data_loader's prepare_spatial_data method
-        return self.data_loader.prepare_spatial_data()
-
-    def prepare_turnout_change_data(self) -> gpd.GeoDataFrame:
-        """Prepare data for turnout change visualization between 2005 and 2009."""
-        # Prepare spatial data
-        spatial_2005, spatial_2009 = self.prepare_spatial_data()
+        # Get spatial data using data_merger
+        _, spatial_2005, spatial_2009 = self.get_spatial_data()
 
         # For municipalities that exist in both datasets, calculate turnout change
         # Use shapeName for joining as it's more reliable than the fuzzy matched names
@@ -317,24 +255,23 @@ class DataAnalyzer:
 
         # Check that we have matched data for these municipalities
         spatial_2005_common = spatial_2005_common[
-            spatial_2005_common["stemmeprocent_election"].notna()
+            spatial_2005_common["stemmeprocent"].notna()
         ]
         spatial_2009_common = spatial_2009_common[
-            spatial_2009_common["stemmeprocent_election"].notna()
+            spatial_2009_common["stemmeprocent"].notna()
         ]
 
         # Merge data for comparison
         comparison_df = pd.merge(
-            spatial_2005_common[["shapeName", "stemmeprocent_election", "geometry"]],
-            spatial_2009_common[["shapeName", "stemmeprocent_election"]],
+            spatial_2005_common[["shapeName", "stemmeprocent", "geometry"]],
+            spatial_2009_common[["shapeName", "stemmeprocent"]],
             on="shapeName",
             suffixes=("_2005", "_2009"),
         )
 
         # Calculate turnout change
         comparison_df["turnout_change"] = (
-            comparison_df["stemmeprocent_election_2009"]
-            - comparison_df["stemmeprocent_election_2005"]
+            comparison_df["stemmeprocent_2009"] - comparison_df["stemmeprocent_2005"]
         )
 
         # Convert to GeoDataFrame
@@ -344,44 +281,82 @@ class DataAnalyzer:
 
         return comparison_gdf
 
-    def get_quasi_experimental_comparison(self) -> dict:
+    def get_spatial_data(
+        self,
+    ) -> tuple[gpd.GeoDataFrame, gpd.GeoDataFrame, gpd.GeoDataFrame]:
+        """Get merged spatial data for all years.
+
+        Returns:
+            Tuple of GeoDataFrames for 2001, 2005, and 2009 with merged spatial and election data
+        """
+        # Load geographic data if not already loaded
+        self._load_geographical_data()
+
+        # Load election data for all years
+        election_2001_df = self.data_loader.load_2001_data()
+        election_2005_df = self.data_loader.load_2005_data()
+        election_2009_df = self.data_loader.load_2009_data()
+
+        # Check if we've already computed this result
+        if self._cached_spatial_data is None:
+            self._cached_spatial_data = self.data_merger.get_spatial_data(
+                self.municipality_gdf,
+                election_2001_df,
+                election_2005_df,
+                election_2009_df,
+            )
+
+        return self._cached_spatial_data
+
+    @lru_cache(maxsize=1)
+    def get_copenhagen_metropolitan_area(
+        self,
+    ) -> tuple[gpd.GeoDataFrame, gpd.GeoDataFrame, gpd.GeoDataFrame]:
+        """Get spatial data for Copenhagen metropolitan area.
+
+        Returns:
+            Tuple of GeoDataFrames for 2001, 2005, and 2009 Copenhagen area
+        """
+        # Get all spatial data
+        spatial_2001, spatial_2005, spatial_2009 = self.get_spatial_data()
+
+        # Use data_merger to extract Copenhagen area
+        metro_2001, metro_2005, metro_2009 = self.data_merger.extract_copenhagen_area(
+            spatial_2001, spatial_2005, spatial_2009
+        )
+
+        # Return only 2005 and 2009 as that's what's used in the visualizer
+        return metro_2001, metro_2005, metro_2009
+
+    def get_quasi_experimental_comparison(self) -> dict[str, Any]:
         """Perform quasi-experimental comparison between merged and unchanged municipalities.
 
         Returns:
-            Dict: Comparison results showing differential effects by municipality type
+            Dict with comparison results showing differential effects by municipality type
         """
-
-        # Load data if not already loaded
-        if self.election_2005_df is None or self.election_2009_df is None:
-            self.load_data()
-
         # Get the spatial data that contains the merged flag
-        spatial_2005, spatial_2009 = self.prepare_spatial_data()
+        _, spatial_2005, spatial_2009 = self.get_spatial_data()
 
         # Identify municipalities that were merged vs unchanged based on the merged flag
-        merged_2005 = spatial_2005[spatial_2005["merged_election"] == True]
-        unchanged_2005 = spatial_2005[spatial_2005["merged_election"] != True]
+        merged_2005 = spatial_2005[spatial_2005["merged"] == True]  # noqa: E712
+        unchanged_2005 = spatial_2005[spatial_2005["merged"] != True]  # noqa: E712
 
         # For unchanged municipalities, find their counterparts in 2009
-        unchanged_names = set(unchanged_2005["name_election"]).intersection(
-            set(spatial_2009["name_election"])
+        unchanged_names = set(unchanged_2005["name"]).intersection(
+            set(spatial_2009["name"])
         )
 
-        unchanged_2005 = unchanged_2005[
-            unchanged_2005["name_election"].isin(unchanged_names)
-        ]
-        unchanged_2009 = spatial_2009[
-            spatial_2009["name_election"].isin(unchanged_names)
-        ]
+        unchanged_2005 = unchanged_2005[unchanged_2005["name"].isin(unchanged_names)]
+        unchanged_2009 = spatial_2009[spatial_2009["name"].isin(unchanged_names)]
 
         # Calculate average metrics
-        turnout_unchanged_2005 = unchanged_2005["stemmeprocent_election"].mean()
-        turnout_unchanged_2009 = unchanged_2009["stemmeprocent_election"].mean()
-        turnout_merged_2005 = merged_2005["stemmeprocent_election"].mean()
+        turnout_unchanged_2005 = unchanged_2005["stemmeprocent"].mean()
+        turnout_unchanged_2009 = unchanged_2009["stemmeprocent"].mean()
+        turnout_merged_2005 = merged_2005["stemmeprocent"].mean()
 
         # Calculate average population sizes
-        pop_unchanged_2005 = unchanged_2005["stemmeberettigede_election"].mean()
-        pop_unchanged_2009 = unchanged_2009["stemmeberettigede_election"].mean()
+        pop_unchanged_2005 = unchanged_2005["stemmeberettigede"].mean()
+        pop_unchanged_2009 = unchanged_2009["stemmeberettigede"].mean()
 
         return {
             "unchanged_municipalities": {
@@ -401,14 +376,19 @@ class DataAnalyzer:
             },
         }
 
-    def generate_analysis_report(self) -> dict:
+    def generate_analysis_report(self) -> dict[str, Any]:
         """Generate a comprehensive analysis report combining all analyses.
 
         Returns:
-            Dict: Complete analysis results
+            Dict with complete analysis results for all metrics
         """
-        if self.election_2005_df is None or self.election_2009_df is None:
-            self.load_data()
+        # Load the data for years needed for this analysis
+        election_2001_df = self.data_loader.load_2001_data()
+        election_2009_df = self.data_loader.load_2009_data()
+
+        # Calculate total councilors
+        total_councilors_2001 = self._calculate_total_councilors(election_2001_df)
+        total_councilors_2009 = self._calculate_total_councilors(election_2009_df)
 
         turnout_analysis = self.analyze_voter_turnout()
         representation_analysis = self.analyze_representation_density()
@@ -417,26 +397,19 @@ class DataAnalyzer:
         # Combine all analyses
         report = {
             "summary": {
-                "municipalities_before_reform": len(self.election_2005_df),
-                "municipalities_after_reform": len(self.election_2009_df),
-                "reduction_percentage": (
-                    len(self.election_2005_df) - len(self.election_2009_df)
-                )
-                / len(self.election_2005_df)
-                * 100,
-                "total_councilors_before": self.TOTAL_COUNCILORS_2005,
-                "total_councilors_after": self.TOTAL_COUNCILORS_2009,
+                "total_councilors_before": total_councilors_2001,
+                "total_councilors_after": total_councilors_2009,
                 "councilors_reduction_percentage": (
-                    self.TOTAL_COUNCILORS_2005 - self.TOTAL_COUNCILORS_2009
+                    total_councilors_2001 - total_councilors_2009
                 )
-                / self.TOTAL_COUNCILORS_2005
+                / total_councilors_2001
                 * 100,
                 "overall_turnout_before": turnout_analysis["overall_turnout"]["2005"],
                 "overall_turnout_after": turnout_analysis["overall_turnout"]["2009"],
                 "overall_turnout_change": turnout_analysis["overall_turnout"]["change"],
                 "representation_density_before": representation_analysis[
                     "overall_density"
-                ]["2005"],
+                ]["2001"],
                 "representation_density_after": representation_analysis[
                     "overall_density"
                 ]["2009"],
@@ -454,30 +427,40 @@ class DataAnalyzer:
     def calculate_representation_density(
         self, spatial_data: gpd.GeoDataFrame, year: int
     ) -> gpd.GeoDataFrame:
-        """Calculate representation density (citizens per councilor) for any spatial dataset.
+        """Calculate representation density (citizens per councilor) for spatial dataset."""
+        # Create a deep copy to avoid modifying the original
+        result_data = spatial_data.copy(deep=True)
 
-        Args:
-            spatial_data: GeoDataFrame containing municipality data
-            year: Election year (2005 or 2009)
+        if year == 2001:
+            self.logger.info("Calculating 2001 density on post-merger level")
 
-        Returns:
-            GeoDataFrame with density column added
-        """
-        # Create a copy to avoid modifying the original
-        result_data = spatial_data.copy()
+            # Create temporary columns only for this calculation
+            temp_data = result_data.copy()
 
-        # Calculate representation density
-        total_councilors = (
-            self.TOTAL_COUNCILORS_2005 if year == 2005 else self.TOTAL_COUNCILORS_2009
-        )
-        municipality_count = (
-            len(self.election_2005_df) if year == 2005 else len(self.election_2009_df)
-        )
+            # Check if we have post_merger_kommune to aggregate
+            if "post_merger_kommune" in temp_data.columns:
+                # Perform the aggregation on temporary data
+                voter_counts = temp_data.groupby("post_merger_kommune")[
+                    "stemmeberettigede"
+                ].transform("sum")
+                counselor_counts = temp_data.groupby("post_merger_kommune")[
+                    "counselor_count"
+                ].transform("sum")
+            else:
+                # No way to aggregate, fall back to non-aggregated values
+                self.logger.warning(
+                    "No post_merger_kommune found for aggregation, using raw values"
+                )
+                voter_counts = temp_data["stemmeberettigede"]
+                counselor_counts = temp_data["counselor_count"]
 
-        # Calculate density as eligible voters per average councilor count
-        result_data["density"] = result_data["stemmeberettigede_election"] / (
-            total_councilors / municipality_count
-        )
+            # Calculate density directly without modifying the original data structure
+            result_data["density"] = voter_counts / counselor_counts
+
+        elif year == 2009:
+            result_data["density"] = (
+                result_data["stemmeberettigede"] / result_data["counselor_count"]
+            )
 
         self.logger.info(
             f"Calculated representation density for {len(result_data)} municipalities"
@@ -505,25 +488,20 @@ class DataAnalyzer:
         data_2005_common = data_2005[data_2005["shapeName"].isin(common_names)]
         data_2009_common = data_2009[data_2009["shapeName"].isin(common_names)]
 
-        data_2005_common = data_2005_common[
-            data_2005_common["stemmeprocent_election"].notna()
-        ]
-        data_2009_common = data_2009_common[
-            data_2009_common["stemmeprocent_election"].notna()
-        ]
+        data_2005_common = data_2005_common[data_2005_common["stemmeprocent"].notna()]
+        data_2009_common = data_2009_common[data_2009_common["stemmeprocent"].notna()]
 
         # Merge data for comparison
         comparison = pd.merge(
-            data_2005_common[["shapeName", "stemmeprocent_election", "geometry"]],
-            data_2009_common[["shapeName", "stemmeprocent_election"]],
+            data_2005_common[["shapeName", "stemmeprocent", "geometry"]],
+            data_2009_common[["shapeName", "stemmeprocent"]],
             on="shapeName",
             suffixes=("_2005", "_2009"),
         )
 
         # Calculate turnout change
         comparison["turnout_change"] = (
-            comparison["stemmeprocent_election_2009"]
-            - comparison["stemmeprocent_election_2005"]
+            comparison["stemmeprocent_2009"] - comparison["stemmeprocent_2005"]
         )
 
         # Convert to GeoDataFrame
@@ -539,7 +517,7 @@ class DataAnalyzer:
     def prepare_copenhagen_turnout_change_data(self) -> gpd.GeoDataFrame:
         """Prepare turnout change data specifically for the Copenhagen metropolitan area."""
         # Get Copenhagen metropolitan data
-        metro_2005, metro_2009 = self.data_loader.get_copenhagen_metropolitan_area()
+        _, metro_2005, metro_2009 = self.get_copenhagen_metropolitan_area()
 
         # Ensure data is in correct projection
         metro_2005_web = (

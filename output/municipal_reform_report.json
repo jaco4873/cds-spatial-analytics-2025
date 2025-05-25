@@ -1,17 +1,14 @@
 {
   "summary": {
-    "municipalities_before_reform": 98,
-    "municipalities_after_reform": 98,
-    "reduction_percentage": 0.0,
-    "total_councilors_before": 4597,
+    "total_councilors_before": 4647,
     "total_councilors_after": 2468,
-    "councilors_reduction_percentage": 46.312812703937354,
+    "councilors_reduction_percentage": 46.8904669679363,
     "overall_turnout_before": 69.46152541762493,
     "overall_turnout_after": 65.8152931134951,
     "overall_turnout_change": -3.646232304129825,
-    "representation_density_before": 912.1028931912117,
+    "representation_density_before": 894.0822035721972,
     "representation_density_after": 1735.5721231766613,
-    "representation_density_increase_percentage": 90.28249292186149
+    "representation_density_increase_percentage": 94.1177350631064
   },
   "voter_turnout": {
     "overall_turnout": {
@@ -710,28 +707,28 @@
   },
   "representation_density": {
     "total_councilors": {
-      "2005": 4597,
+      "2001": 4647,
       "2009": 2468,
-      "change": -2129,
-      "percent_change": -46.312812703937354
+      "change": -2179,
+      "percent_change": -46.8904669679363
     },
     "overall_density": {
-      "2005": 912.1028931912117,
+      "2001": 894.0822035721972,
       "2009": 1735.5721231766613,
-      "change": 823.4692299854496,
-      "percent_change": 90.28249292186149
+      "change": 841.4899196044641,
+      "percent_change": 94.1177350631064
     },
     "avg_municipal_density": {
-      "2005": 912.1028931912117,
-      "2009": 1735.572123176661,
-      "change": 823.4692299854494,
-      "percent_change": 90.28249292186146
+      "2001": 1031.419211562156,
+      "2009": 1569.0587728001951,
+      "change": 537.639561238039,
+      "percent_change": 52.12619226121904
     },
     "municipalities_count": {
-      "2005": 271,
+      "2001": 98,
       "2009": 98,
-      "change": -173,
-      "percent_change": -63.837638376383765
+      "change": 0,
+      "percent_change": 0.0
     }
   },
   "quasi_experimental_comparison": {

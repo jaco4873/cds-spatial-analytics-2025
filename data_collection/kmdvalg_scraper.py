@@ -97,7 +97,6 @@ def extract_kommune_stats(html_content):
                 elif "Stemmeprocent" in label:
                     stats["stemmeprocent"] = value
                 elif "Optalte stemmer" in label:
-                    stats["stemmeprocent"] = value
                     stats["optalte_stemmer"] = value
 
     return stats
