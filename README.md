@@ -1,18 +1,18 @@
 # Danish Municipal Reform Analysis
 
-This project analyzes the democratic consequences of Denmark's 2007 municipal reform, which reduced the number of municipalities from 271 to 98 and cut the number of local councilors from 4,597 to 2,520.
+This project analyzes the democratic consequences of Denmark's 2007 municipal reform, which reduced the number of municipalities from 271 to 98 (2005-2009) and cut the number of local councilors from 4,597 to 2,520 (2001-2009).
 
 ## Overview
 
 The analysis evaluates the democratic impact of the reform by examining:
 
 1. Changes in voter turnout between 2005 (pre-reform) and 2009 (post-reform)
-2. Changes in representation density (citizens per councilor)
+2. Changes in representation density (citizens per councilor) between 2001 and 2009
 3. Spatial patterns in democratic participation
 
 ## Data Sources
 
-- **Election Data**: Municipal election results from 2005 and 2009 (KMD Valg)
+- **Election Data**: Municipal election results from 2001, 2005 and 2009 (KMD Valg)
 - **Geographical Data**: Municipal boundaries from geoBoundaries
 
 ## Project Structure
